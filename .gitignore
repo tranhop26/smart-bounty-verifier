@@ -1,0 +1,14 @@
+pycache/
+*.pyc
+*.pyo
+.env
+.venv/
+*.egg-info/
+dist/
+build/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
