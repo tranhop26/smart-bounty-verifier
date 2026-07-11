@@ -44,3 +44,13 @@ class Contract:
             "total_count": total,
             "threshold": thr,
         })
+
+    @gl.public.write
+    def submit(self, bounty_id: str, submission_url: str):
+        b = self._load(bounty_id)
+        if b["status"] != "OPEN":
+            raise Exception("Bounty is not open")
+        b["submission_url"] = submission_url
+        b["submitter"] = str(gl.message.sender_account)
+        b["status"] = "SUBMITTED"
+        self._store(bounty_id, b)
