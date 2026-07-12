@@ -54,3 +54,47 @@ class Contract:
         b["submitter"] = str(gl.message.sender_account)
         b["status"] = "SUBMITTED"
         self._store(bounty_id, b)
+
+    @gl.public.write
+    def verify(self, bounty_id: str):
+        b = self._load(bounty_id)
+        if b["status"] != "SUBMITTED":
+            raise Exception("Bounty is not submitted")
+
+        page = gl.get_webpage(b["submission_url"], mode="text")
+        reqs = json.loads(b["requirements_json"])
+        details = []
+        passed = 0
+
+        for req in reqs:
+            prompt = (
+                f"Requirement: {req}\n\n"
+                f"Web page content:\n{page}\n\n"
+                "Does the web page satisfy the requirement? "
+                "Reply EXACTLY with a JSON object: "
+                '{"result":"PASS","reason":"..."} or {"result":"FAIL","reason":"..."}'
+            )
+            with gl.eq_principle_strict_eq():
+                raw = gl.exec_prompt(prompt)
+            try:
+                obj = json.loads(raw)
+            except Exception:
+                obj = {"result": "FAIL", "reason": raw[:200]}
+            details.append({
+                "requirement": req,
+                "result": obj.get("result", "FAIL"),
+                "reason": obj.get("reason", ""),
+            })
+            if obj.get("result") == "PASS":
+                passed += 1
+
+        verdict = "PASS" if passed >= b["threshold"] else "FAIL"
+        b["verdict_json"] = json.dumps({
+            "details": details,
+            "passed_count": passed,
+            "total_count": len(reqs),
+            "verdict": verdict,
+        })
+        b["passed_count"] = passed
+        b["status"] = "VERIFIED" if verdict == "PASS" else "REJECTED"
+        self._store(bounty_id, b)
