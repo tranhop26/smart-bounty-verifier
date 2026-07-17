@@ -162,6 +162,14 @@ python -m http.server 8080
 > [!NOTE]
 > The frontend connects directly to GenLayer's JSON-RPC API. No additional backend needed.
 
+## 🔗 Deployed Contract
+
+| Network | Address |
+|---------|---------|
+| GenLayer Testnet (Studio) | `0xBDd0e1073665ADd7C64a4F2779b84314644Ce3Fc` |
+
+> **Explorer**: Deploy and interact via [GenLayer Studio](https://studio.genlayer.com/run-debug)
+
 ### Demo Results
 - **Contract:** `smart_bounty_verifier.py`
 - **Status:** Deployed OK
