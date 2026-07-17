@@ -6,6 +6,8 @@
 ![Python](https://img.shields.io/badge/Python-3.11+-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Status-Deployed%20%26%20Tested-brightgreen)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://tranhop26.github.io/smart-bounty-verifier/)
+[![GenLayer](https://img.shields.io/badge/built%20on-GenLayer-blue)](https://genlayer.com)
 
 ## 🌟 Overview
 
@@ -169,6 +171,10 @@ python -m http.server 8080
 | GenLayer Testnet (Studio) | `0xBDd0e1073665ADd7C64a4F2779b84314644Ce3Fc` |
 
 > **Explorer**: Deploy and interact via [GenLayer Studio](https://studio.genlayer.com/run-debug)
+
+### 🌐 Live Demo
+
+> **[▶️ Open Live dApp](https://tranhop26.github.io/smart-bounty-verifier/)** — No install required, runs directly in browser
 
 ### Demo Results
 - **Contract:** `smart_bounty_verifier.py`
