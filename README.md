@@ -209,6 +209,3 @@ MIT License -- see LICENSE for details.
 - GenLayer -- For building the Intelligent Contract platform
 - GenLayer Studio -- For the development and testing environment
 - Built with love for the GenLayer Bounty Program
-
-*Last tested: July 2026 on GenLayer Studio v0.2.16*
-
