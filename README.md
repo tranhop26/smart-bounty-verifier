@@ -129,6 +129,39 @@ verify(bounty_id="0")
 get_bounty(bounty_id="0")
 ```
 
+## 🖥️ Frontend dApp
+
+A self-contained single-page application is included in the `frontend/` directory.
+
+### Running the Frontend
+
+```bash
+# Simply open in browser — no build step required!
+cd frontend
+# Option 1: Open directly
+start index.html
+
+# Option 2: Use any HTTP server
+python -m http.server 8080
+# Then visit http://localhost:8080
+```
+
+### Features
+- 📊 Dashboard — Real-time stats and bounty list
+- ➕ Create — Create bounties with multi-line requirements
+- 📤 Submit — Submit work URLs for verification
+- 🤖 Verify — Trigger AI verification with live progress
+- 🔍 Inspect — View detailed verdict with per-requirement results
+
+### Connecting to GenLayer
+1. Deploy the contract on GenLayer Studio
+2. Copy the contract address
+3. Enter the RPC URL and contract address in the frontend
+4. Start interacting!
+
+> [!NOTE]
+> The frontend connects directly to GenLayer's JSON-RPC API. No additional backend needed.
+
 ### Demo Results
 - **Contract:** `smart_bounty_verifier.py`
 - **Status:** Deployed OK
@@ -170,11 +203,13 @@ get_bounty(bounty_id="0")
 - `TreeMap` -- On-chain storage for bounties.
 - `gl.message.sender_address` -- Tracks creator and submitter addresses.
 
-## Project Structure
-```
+## 📁 Project Structure
+```markdown
 smart-bounty-verifier/
 ├── contracts/
 │   └── smart_bounty_verifier.py    # Main intelligent contract
+├── frontend/
+│   └── index.html                  # Self-contained dApp (no build step)
 ├── tests/
 │   └── test_contract_logic.py      # Unit tests
 ├── docs/

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Bounty Verifier — GenLayer dApp</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #475569;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0 30px;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            padding: 4px;
+            border-radius: var(--radius);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--bg-input);
+            color: var(--text);
+        }
+
+        .panel {
+            display: none;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 28px;
+            border: 1px solid var(--border);
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 4px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #1e293b;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-input);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .bounty-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bounty-card {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 16px 20px;
+            border-left: 4px solid var(--border);
+        }
+
+        .bounty-card.status-OPEN { border-left-color: var(--primary); }
+        .bounty-card.status-SUBMITTED { border-left-color: var(--warning); }
+        .bounty-card.status-VERIFIED { border-left-color: var(--success); }
+        .bounty-card.status-REJECTED { border-left-color: var(--danger); }
+
+        .bounty-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .bounty-id {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-OPEN { background: rgba(99,102,241,0.2); color: #818cf8; }
+        .badge-SUBMITTED { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .badge-VERIFIED { background: rgba(16,185,129,0.2); color: #34d399; }
+        .badge-REJECTED { background: rgba(239,68,68,0.2); color: #f87171; }
+
+        .bounty-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .bounty-meta span {
+            margin-right: 16px;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .result-box h4 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .result-box pre {
+            font-size: 0.8rem;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-family: 'Fira Code', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .verdict-detail {
+            margin: 8px 0;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border-radius: 6px;
+            font-size: 0.82rem;
+        }
+
+        .verdict-detail .req {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .verdict-detail .reason {
+            color: var(--text-muted);
+        }
+
+        .verdict-pass { border-left: 3px solid var(--success); }
+        .verdict-fail { border-left: 3px solid var(--danger); }
+
+        .config-section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .config-section h3 {
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+
+        .inline-form {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .inline-form .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .tabs { flex-wrap: wrap; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .inline-form { flex-direction: column; }
+            header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏆 Smart Bounty Verifier</h1>
+            <p>AI-Powered Bounty Verification on GenLayer</p>
+        </header>
+
+        <!-- Connection Status -->
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText">Disconnected</span>
+            <span class="status-text">|</span>
+            <span class="status-text" id="contractAddr">No contract</span>
+        </div>
+
+        <!-- Config Section -->
+        <div class="config-section">
+            <h3>⚙️ Connection Settings</h3>
+            <div class="inline-form">
+                <div class="form-group">
+                    <label>GenLayer RPC URL</label>
+                    <input type="text" id="rpcUrl" value="http://localhost:4000/api" placeholder="http://localhost:4000/api">
+                </div>
+                <div class="form-group">
+                    <label>Contract Address</label>
+                    <input type="text" id="contractAddress" placeholder="0x...">
+                </div>
+                <button class="btn btn-primary" onclick="connect()">Connect</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="switchTab('create')">➕ Create</button>
+            <button class="tab" onclick="switchTab('submit')">📤 Submit</button>
+            <button class="tab" onclick="switchTab('verify')">🤖 Verify</button>
+            <button class="tab" onclick="switchTab('inspect')">🔍 Inspect</button>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div class="panel active" id="panel-dashboard">
+            <h2>📊 Dashboard</h2>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="number" id="stat-total">—</div>
+                    <div class="label">Total</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-open">—</div>
+                    <div class="label">Open</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-submitted">—</div>
+                    <div class="label">Submitted</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-verified">—</div>
+                    <div class="label">Verified</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-rejected">—</div>
+                    <div class="label">Rejected</div>
+                </div>
+            </div>
+            <h3 style="margin-bottom:12px; font-size:1rem;">Recent Bounties</h3>
+            <div class="bounty-list" id="bountyList">
+                <p style="color:var(--text-muted); font-size:0.85rem;">Connect to a contract to view bounties.</p>
+            </div>
+        </div>
+
+        <!-- Create Panel -->
+        <div class="panel" id="panel-create">
+            <h2>➕ Create Bounty</h2>
+            <div class="form-group">
+                <label>Requirements (one per line)</label>
+                <textarea id="createReqs" placeholder="Has README with setup instructions&#10;Has unit tests&#10;Has CI/CD pipeline"></textarea>
+                <small>Each line becomes one requirement the AI will check</small>
+            </div>
+            <div class="form-group">
+                <label>Source URL</label>
+                <input type="text" id="createSourceUrl" placeholder="https://github.com/org/repo">
+                <small>Reference URL for the bounty (e.g., original spec or repo)</small>
+            </div>
+            <div class="form-group">
+                <label>Pass Threshold (%)</label>
+                <input type="number" id="createThreshold" value="100" min="0" max="100">
+                <small>Percentage of requirements that must pass (100 = all must pass)</small>
+            </div>
+            <button class="btn btn-primary" onclick="createBounty()" id="btnCreate">🚀 Create Bounty</button>
+            <div class="result-box" id="createResult" style="display:none;">
+                <h4>Transaction Result</h4>
+                <pre id="createResultText"></pre>
+            </div>
+        </div>
+
+        <!-- Submit Panel -->
+        <div class="panel" id="panel-submit">
+            <h2>📤 Submit Work</h2>
+            <div class="form-group">
+                <label>Bounty ID</label>
+                <input type="text" id="submitBountyId" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Submission URL</label>
+                <input type="text" id="submitUrl" placeholder="https://github.com/your-username/your-project">
+                <small>URL to your completed work (will be fetched and analyzed by AI)</small>
+            </div>
+            <button class="btn btn-warning" onclick="submitWork()" id="btnSubmit">📤 Submit Work</button>
+            <div class="result-box" id="submitResult" style="display:none;">
+                <h4>Transaction Result</h4>
+                <pre id="submitResultText"></pre>
+            </div>
+        </div>
+
+        <!-- Verify Panel -->
+        <div class="panel" id="panel-verify">
+            <h2>🤖 AI Verification</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:16px;">
+                Triggers the AI to fetch the submission URL, evaluate each requirement, and reach consensus among validators.
+            </p>
+            <div class="form-group">
+                <label>Bounty ID to Verify</label>
+                <input type="text" id="verifyBountyId" placeholder="0">
+            </div>
+            <button class="btn btn-success" onclick="verifyBounty()" id="btnVerify">🤖 Run AI Verification</button>
+            <div class="result-box" id="verifyResult" style="display:none;">
+                <h4>Verification Result</h4>
+                <pre id="verifyResultText"></pre>
+            </div>
+        </div>
+
+        <!-- Inspect Panel -->
+        <div class="panel" id="panel-inspect">
+            <h2>🔍 Inspect Bounty</h2>
+            <div class="inline-form" style="margin-bottom:16px;">
+                <div class="form-group">
+                    <label>Bounty ID</label>
+                    <input type="text" id="inspectBountyId" placeholder="0">
+                </div>
+                <button class="btn btn-primary" onclick="inspectBounty()">🔍 Inspect</button>
+            </div>
+            <div id="inspectOutput"></div>
+        </div>
+
+        <footer>
+            <p>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Intelligent Contract Platform</p>
+            <p style="margin-top:6px;">
+                <a href="https://github.com/tranhop26/smart-bounty-verifier" target="_blank">GitHub Repository</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        // GenLayer JSON-RPC Client
+        // ═══════════════════════════════════════════════════
+        
+        let config = {
+            rpcUrl: '',
+            contractAddress: '',
+            connected: false
+        };
+
+        // Tab switching
+        function switchTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+
+        // Connect to contract
+        async function connect() {
+            config.rpcUrl = document.getElementById('rpcUrl').value.trim();
+            config.contractAddress = document.getElementById('contractAddress').value.trim();
+
+            if (!config.rpcUrl || !config.contractAddress) {
+                alert('Please fill in both RPC URL and Contract Address');
+                return;
+            }
+
+            try {
+                // Test connection by calling get_stats
+                const stats = await callRead('get_stats', []);
+                config.connected = true;
+                
+                document.getElementById('statusDot').classList.add('connected');
+                document.getElementById('statusText').textContent = 'Connected';
+                document.getElementById('contractAddr').textContent = 
+                    config.contractAddress.slice(0, 6) + '...' + config.contractAddress.slice(-4);
+
+                // Load dashboard
+                await loadDashboard();
+            } catch (e) {
+                config.connected = true; // Still mark as configured
+                document.getElementById('statusDot').classList.add('connected');
+                document.getElementById('statusText').textContent = 'Configured (offline mode)';
+                document.getElementById('contractAddr').textContent = 
+                    config.contractAddress.slice(0, 6) + '...' + config.contractAddress.slice(-4);
+            }
+        }
+
+        // GenLayer JSON-RPC call (read)
+        async function callRead(method, args) {
+            const payload = {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                method: 'call_contract_function',
+                params: {
+                    contract_address: config.contractAddress,
+                    function_name: method,
+                    function_args: args
+                }
+            };
+
+            const res = await fetch(config.rpcUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const json = await res.json();
+            if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+            return json.result;
+        }
+
+        // GenLayer JSON-RPC call (write)
+        async function callWrite(method, args) {
+            const payload = {
+                jsonrpc: '2.0',
+                id: Date.now(),
+                method: 'send_transaction',
+                params: {
+                    contract_address: config.contractAddress,
+                    function_name: method,
+                    function_args: args
+                }
+            };
+
+            const res = await fetch(config.rpcUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const json = await res.json();
+            if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
+            return json.result;
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const statsRaw = await callRead('get_stats', []);
+                const stats = JSON.parse(statsRaw);
+                
+                document.getElementById('stat-total').textContent = stats.total || 0;
+                document.getElementById('stat-open').textContent = stats.open || 0;
+                document.getElementById('stat-submitted').textContent = stats.submitted || 0;
+                document.getElementById('stat-verified').textContent = stats.verified || 0;
+                document.getElementById('stat-rejected').textContent = stats.rejected || 0;
+
+                // Load bounties
+                const bountiesRaw = await callRead('get_all_bounties', []);
+                const bounties = JSON.parse(bountiesRaw);
+                renderBountyList(bounties);
+            } catch (e) {
+                console.log('Dashboard load error:', e);
+                document.getElementById('bountyList').innerHTML = 
+                    '<p style="color:var(--text-muted);">Could not load data. Contract may not be deployed yet.</p>';
+            }
+        }
+
+        // Render bounty list
+        function renderBountyList(bounties) {
+            const container = document.getElementById('bountyList');
+            if (!bounties || bounties.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);">No bounties yet. Create one!</p>';
+                return;
+            }
+
+            container.innerHTML = bounties.map((b, i) => {
+                const reqs = JSON.parse(b.requirements_json || '[]');
+                return `
+                    <div class="bounty-card status-${b.status}">
+                        <div class="bounty-header">
+                            <span class="bounty-id">Bounty #${i}</span>
+                            <span class="badge badge-${b.status}">${b.status}</span>
+                        </div>
+                        <div class="bounty-meta">
+                            <span>📋 ${reqs.length} requirements</span>
+                            <span>✅ ${b.passed_count}/${b.total_count} passed</span>
+                            <span>🎯 Threshold: ${b.threshold}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Create bounty
+        async function createBounty() {
+            const reqsText = document.getElementById('createReqs').value.trim();
+            const sourceUrl = document.getElementById('createSourceUrl').value.trim();
+            const threshold = document.getElementById('createThreshold').value;
+
+            if (!reqsText) { alert('Please enter at least one requirement'); return; }
+
+            const reqs = reqsText.split('\n').map(r => r.trim()).filter(r => r);
+            const requirementsJson = JSON.stringify(reqs);
+
+            const btn = document.getElementById('btnCreate');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Creating...';
+
+            try {
+                const result = await callWrite('create_bounty', [requirementsJson, sourceUrl, threshold]);
+                showResult('createResult', 'createResultText', {
+                    status: 'SUCCESS',
+                    message: 'Bounty created successfully!',
+                    requirements: reqs,
+                    threshold_pct: threshold,
+                    tx_result: result
+                });
+                if (config.connected) await loadDashboard();
+            } catch (e) {
+                showResult('createResult', 'createResultText', {
+                    status: 'ERROR',
+                    message: e.message,
+                    hint: 'Make sure you are connected to a running GenLayer node'
+                });
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🚀 Create Bounty';
+        }
+
+        // Submit work
+        async function submitWork() {
+            const bountyId = document.getElementById('submitBountyId').value.trim();
+            const url = document.getElementById('submitUrl').value.trim();
+
+            if (!bountyId || !url) { alert('Please fill in both fields'); return; }
+
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Submitting...';
+
+            try {
+                const result = await callWrite('submit', [bountyId, url]);
+                showResult('submitResult', 'submitResultText', {
+                    status: 'SUCCESS',
+                    message: `Work submitted for Bounty #${bountyId}`,
+                    submission_url: url,
+                    tx_result: result
+                });
+                if (config.connected) await loadDashboard();
+            } catch (e) {
+                showResult('submitResult', 'submitResultText', {
+                    status: 'ERROR',
+                    message: e.message
+                });
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '📤 Submit Work';
+        }
+
+        // Verify bounty
+        async function verifyBounty() {
+            const bountyId = document.getElementById('verifyBountyId').value.trim();
+            if (!bountyId) { alert('Please enter a bounty ID'); return; }
+
+            const btn = document.getElementById('btnVerify');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> AI Verifying (this may take a moment)...';
+
+            try {
+                const result = await callWrite('verify', [bountyId]);
+                
+                // Fetch updated bounty
+                const bountyRaw = await callRead('get_bounty', [bountyId]);
+                const bounty = JSON.parse(bountyRaw);
+                
+                let verdict = {};
+                try { verdict = JSON.parse(bounty.verdict_json); } catch(e) {}
+
+                showResult('verifyResult', 'verifyResultText', {
+                    status: bounty.status === 'VERIFIED' ? 'PASS ✅' : 'FAIL ❌',
+                    bounty_status: bounty.status,
+                    passed: `${verdict.passed_count || 0}/${verdict.total_count || 0}`,
+                    verdict: verdict,
+                    tx_result: result
+                });
+                
+                if (config.connected) await loadDashboard();
+            } catch (e) {
+                showResult('verifyResult', 'verifyResultText', {
+                    status: 'ERROR',
+                    message: e.message,
+                    hint: 'Verification requires the bounty to be in SUBMITTED status'
+                });
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '🤖 Run AI Verification';
+        }
+
+        // Inspect bounty
+        async function inspectBounty() {
+            const bountyId = document.getElementById('inspectBountyId').value.trim();
+            if (!bountyId) { alert('Please enter a bounty ID'); return; }
+
+            const output = document.getElementById('inspectOutput');
+            output.innerHTML = '<p><span class="loading"></span> Loading...</p>';
+
+            try {
+                const bountyRaw = await callRead('get_bounty', [bountyId]);
+                const bounty = JSON.parse(bountyRaw);
+                
+                let verdictHtml = '';
+                if (bounty.verdict_json) {
+                    try {
+                        const verdict = JSON.parse(bounty.verdict_json);
+                        if (verdict.details) {
+                            verdictHtml = '<h4 style="margin:16px 0 8px;">Requirement Details:</h4>' +
+                                verdict.details.map(d => `
+                                    <div class="verdict-detail verdict-${d.result.toLowerCase()}">
+                                        <div class="req">${d.result === 'PASS' ? '✅' : '❌'} ${d.requirement}</div>
+                                        <div class="reason">${d.reason}</div>
+                                    </div>
+                                `).join('');
+                        }
+                    } catch(e) {}
+                }
+
+                output.innerHTML = `
+                    <div class="result-box">
+                        <h4>Bounty #${bountyId} Details</h4>
+                        <pre>${JSON.stringify(bounty, null, 2)}</pre>
+                    </div>
+                    ${verdictHtml}
+                `;
+            } catch (e) {
+                output.innerHTML = `<div class="result-box"><h4>Error</h4><pre>${e.message}</pre></div>`;
+            }
+        }
+
+        // Show result helper
+        function showResult(boxId, textId, data) {
+            document.getElementById(boxId).style.display = 'block';
+            document.getElementById(textId).textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
