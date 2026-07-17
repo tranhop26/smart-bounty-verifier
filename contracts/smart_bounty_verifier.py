@@ -235,33 +235,14 @@ class Contract(gl.Contract):
             
             return json.dumps(normalized, sort_keys=True)
             
-        def validator_fn(leader_res: typing.Any) -> bool:
-            if not isinstance(leader_res, gl.vm.Return):
-                return False
-            try:
-                leader = json.loads(leader_res.calldata)
-                mine_str = leader_fn()
-                mine = json.loads(mine_str)
-                
-                if not isinstance(leader, dict) or not isinstance(mine, dict):
-                    return False
-                if "verdict" not in leader or "verdict" not in mine:
-                    return False
-                if "passed_count" not in leader or "passed_count" not in mine:
-                    return False
-                    
-                if leader["verdict"] != mine["verdict"]:
-                    return False
-                    
-                passed_diff = abs(int(leader["passed_count"]) - int(mine["passed_count"]))
-                if passed_diff > 1:
-                    return False
-                    
-                return True
-            except Exception:
-                return False
-                
-        raw_result = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
+        principle = (
+            "Both outputs are JSON with a 'verdict' field that is either 'PASS' or 'FAIL'. "
+            "Compare ONLY the 'verdict' field (ignore the reasoning text and details). "
+            "If both have the same 'verdict' value (both PASS or both FAIL), respond 'agree'. "
+            "If they differ (one PASS and one FAIL), respond 'disagree'."
+        )
+        
+        raw_result = gl.eq_principle.prompt_comparative(leader_fn, principle).get()
         payload = json.loads(raw_result)
         
         bounty.verdict_json = raw_result
