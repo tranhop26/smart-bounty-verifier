@@ -721,8 +721,8 @@
                 </div>
                 <div class="form-group">
                     <label for="contractAddress">Contract Address</label>
-                    <input type="text" id="contractAddress" value="" placeholder="0x...">
-                    <small>Reads and writes both target this exact contract address.</small>
+                    <input type="text" id="contractAddress" value="0xBDd0e1073665ADd7C64a4F2779b84314644Ce3Fc" placeholder="0x..." readonly aria-readonly="true">
+                    <small>This demo is locked to the deployed Studionet contract for consistent reads and writes.</small>
                 </div>
             </div>
             <div class="button-row">
@@ -956,7 +956,7 @@
         const state = {
             networkKey: "studionet",
             rpcUrl: "https://studio.genlayer.com/api",
-            contractAddress: "",
+            contractAddress: "0xBDd0e1073665ADd7C64a4F2779b84314644Ce3Fc",
             walletAddress: "",
             readConnected: false,
             readClient: null,
@@ -1585,7 +1585,7 @@
         appendNotice(
             refs.bountyList,
             "Ready to connect",
-            "1. Choose the network.\n2. Enter the deployed contract address.\n3. Connect the dApp for reads.\n4. Connect your wallet for writes.\n5. Serve this file over HTTP, not file://."
+            "1. Choose the network.\n2. Confirm the prefilled deployed contract address.\n3. Connect the dApp for reads.\n4. Connect your wallet for writes.\n5. Serve this file over HTTP, not file://."
         );
     </script>
 </body>
