@@ -3,53 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Bounty Verifier — GenLayer dApp</title>
+    <title>Smart Bounty Verifier - GenLayer dApp</title>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
             --bg: #0f172a;
             --bg-card: #1e293b;
             --bg-input: #334155;
-            --text: #f1f5f9;
+            --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #475569;
-            --radius: 12px;
+            --radius: 14px;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
             min-height: 100vh;
             padding: 20px;
+            background:
+                radial-gradient(circle at top left, rgba(79, 70, 229, 0.25), transparent 30%),
+                radial-gradient(circle at top right, rgba(16, 185, 129, 0.15), transparent 25%),
+                var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", system-ui, sans-serif;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
+        .banner {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.88);
+            color: var(--text-muted);
+            font-size: 0.92rem;
+        }
+
+        .banner a {
+            color: var(--text);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.35fr 0.95fr;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .hero-card,
+        .proof-card {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.96));
+            overflow: hidden;
+        }
+
+        .hero-card {
+            padding: 28px;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 6px 10px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .hero-card h2 {
+            max-width: 11ch;
+            margin-bottom: 12px;
+            font-size: 2.55rem;
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-card p {
+            max-width: 58ch;
+            color: var(--text-muted);
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hero-kpis {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .hero-kpi {
+            padding: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .hero-kpi strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #ede9fe;
+            font-size: 1.05rem;
+            font-weight: 800;
+        }
+
+        .hero-kpi span {
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            line-height: 1.45;
+        }
+
+        .proof-card {
+            padding: 20px;
+        }
+
+        .proof-card h3 {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .proof-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .proof-item {
+            padding: 12px 12px 12px 14px;
+            border-left: 3px solid transparent;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .proof-item strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+
+        .proof-item span {
+            color: var(--text-muted);
+            font-size: 0.79rem;
+            line-height: 1.5;
+        }
+
+        .proof-live {
+            border-left-color: var(--success);
+        }
+
+        .proof-wallet {
+            border-left-color: var(--primary);
+        }
+
+        .proof-ai {
+            border-left-color: var(--warning);
+        }
+
         header {
+            padding: 30px 0 22px;
             text-align: center;
-            padding: 40px 0 30px;
         }
 
         header h1 {
-            font-size: 2.2rem;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
+            margin-bottom: 10px;
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, #8b5cf6, #22c55e);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
         }
 
         header p {
@@ -57,23 +207,37 @@
             font-size: 1rem;
         }
 
+        .status-bar,
+        .config-section,
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: rgba(30, 41, 59, 0.94);
+        }
+
         .status-bar {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 12px;
-            margin: 20px 0 30px;
-            padding: 12px 20px;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            padding: 16px 18px;
+        }
+
+        .status-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
         }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 11px;
+            height: 11px;
             border-radius: 50%;
             background: var(--danger);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
         }
 
         .status-dot.connected {
@@ -82,35 +246,70 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+            70% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         .status-text {
-            font-size: 0.85rem;
             color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .wallet-pill {
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.75);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .config-section {
+            margin-bottom: 22px;
+            padding: 18px;
+        }
+
+        .config-section h3 {
+            margin-bottom: 14px;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            letter-spacing: 0.02em;
+        }
+
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .tabs {
             display: flex;
             gap: 4px;
             margin-bottom: 24px;
-            background: var(--bg-card);
             padding: 4px;
+            border: 1px solid var(--border);
             border-radius: var(--radius);
+            background: rgba(30, 41, 59, 0.94);
         }
 
         .tab {
             flex: 1;
-            padding: 12px 16px;
             border: none;
+            border-radius: 10px;
+            padding: 12px 16px;
             background: transparent;
             color: var(--text-muted);
             cursor: pointer;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-size: 0.92rem;
+            font-weight: 600;
         }
 
         .tab.active {
@@ -118,17 +317,9 @@
             color: white;
         }
 
-        .tab:hover:not(.active) {
-            background: var(--bg-input);
-            color: var(--text);
-        }
-
         .panel {
             display: none;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 28px;
-            border: 1px solid var(--border);
+            padding: 26px;
         }
 
         .panel.active {
@@ -136,11 +327,14 @@
         }
 
         .panel h2 {
+            margin-bottom: 10px;
             font-size: 1.3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        }
+
+        .panel-note {
+            margin-bottom: 18px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         .form-group {
@@ -149,55 +343,53 @@
 
         .form-group label {
             display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
             margin-bottom: 6px;
-            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            font-weight: 600;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-input);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: var(--bg-input);
             color: var(--text);
-            font-size: 0.9rem;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
+            font-size: 0.92rem;
         }
 
         .form-group textarea {
+            min-height: 110px;
             resize: vertical;
-            min-height: 80px;
-            font-family: 'Fira Code', monospace;
+            font-family: Consolas, monospace;
         }
 
         .form-group small {
             display: block;
-            margin-top: 4px;
+            margin-top: 5px;
             color: var(--text-muted);
-            font-size: 0.75rem;
+            font-size: 0.76rem;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
         }
 
         .btn-primary {
@@ -207,7 +399,6 @@
 
         .btn-primary:hover {
             background: var(--primary-hover);
-            transform: translateY(-1px);
         }
 
         .btn-success {
@@ -217,41 +408,46 @@
 
         .btn-warning {
             background: var(--warning);
-            color: #1e293b;
+            color: #111827;
+        }
+
+        .btn-secondary {
+            background: #0f172a;
+            color: var(--text);
+            border: 1px solid var(--border);
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.55;
             cursor: not-allowed;
-            transform: none;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
 
         .stat-card {
-            background: var(--bg-input);
             padding: 16px;
-            border-radius: 8px;
-            text-align: center;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
         }
 
         .stat-card .number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #c4b5fd;
         }
 
         .stat-card .label {
-            font-size: 0.75rem;
+            margin-top: 5px;
             color: var(--text-muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
         }
 
         .bounty-list {
@@ -261,10 +457,10 @@
         }
 
         .bounty-card {
-            background: var(--bg-input);
-            border-radius: 8px;
-            padding: 16px 20px;
             border-left: 4px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            background: rgba(15, 23, 42, 0.8);
         }
 
         .bounty-card.status-OPEN { border-left-color: var(--primary); }
@@ -275,677 +471,1122 @@
         .bounty-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            gap: 12px;
             margin-bottom: 8px;
         }
 
         .bounty-id {
-            font-weight: 600;
-            font-size: 0.95rem;
+            font-weight: 700;
         }
 
         .badge {
             padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .badge-OPEN { background: rgba(99,102,241,0.2); color: #818cf8; }
-        .badge-SUBMITTED { background: rgba(245,158,11,0.2); color: #fbbf24; }
-        .badge-VERIFIED { background: rgba(16,185,129,0.2); color: #34d399; }
-        .badge-REJECTED { background: rgba(239,68,68,0.2); color: #f87171; }
+        .badge-OPEN { background: rgba(79, 70, 229, 0.2); color: #a5b4fc; }
+        .badge-SUBMITTED { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .badge-VERIFIED { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .badge-REJECTED { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
 
         .bounty-meta {
-            font-size: 0.8rem;
             color: var(--text-muted);
-        }
-
-        .bounty-meta span {
-            margin-right: 16px;
-        }
-
-        .result-box {
-            margin-top: 20px;
-            padding: 16px;
-            background: var(--bg);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .result-box h4 {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .result-box pre {
-            font-size: 0.8rem;
-            color: var(--text);
-            white-space: pre-wrap;
-            word-break: break-all;
-            font-family: 'Fira Code', monospace;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .verdict-detail {
-            margin: 8px 0;
-            padding: 10px 14px;
-            background: var(--bg-card);
-            border-radius: 6px;
             font-size: 0.82rem;
         }
 
+        .bounty-meta span {
+            margin-right: 14px;
+        }
+
+        .result-box,
+        .inline-message {
+            margin-top: 18px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.92);
+            padding: 14px 16px;
+        }
+
+        .result-box h4,
+        .inline-message h4 {
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+        }
+
+        .result-box pre,
+        .inline-message pre {
+            max-height: 320px;
+            overflow-y: auto;
+            color: var(--text);
+            font-size: 0.82rem;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .verdict-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .verdict-detail {
+            border-left: 3px solid var(--border);
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.85);
+            padding: 10px 12px;
+        }
+
+        .verdict-pass {
+            border-left-color: var(--success);
+        }
+
+        .verdict-fail {
+            border-left-color: var(--danger);
+        }
+
         .verdict-detail .req {
-            font-weight: 600;
             margin-bottom: 4px;
+            font-weight: 700;
         }
 
         .verdict-detail .reason {
             color: var(--text-muted);
+            font-size: 0.85rem;
         }
 
-        .verdict-pass { border-left: 3px solid var(--success); }
-        .verdict-fail { border-left: 3px solid var(--danger); }
-
-        .config-section {
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--bg);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .config-section h3 {
-            font-size: 0.9rem;
-            margin-bottom: 12px;
+        .hint-list {
+            margin-top: 10px;
             color: var(--text-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
         }
 
-        .inline-form {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
+        .section-split {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 14px;
+            margin-bottom: 18px;
         }
 
-        .inline-form .form-group {
-            flex: 1;
-            margin-bottom: 0;
+        .callout-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.78);
+            padding: 16px;
+        }
+
+        .callout-card h4 {
+            margin-bottom: 8px;
+            color: #e2e8f0;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .callout-card p,
+        .callout-card li {
+            color: var(--text-muted);
+            font-size: 0.83rem;
+            line-height: 1.55;
+        }
+
+        .callout-card ul {
+            padding-left: 18px;
         }
 
         footer {
+            padding: 36px 0 16px;
             text-align: center;
-            padding: 40px 0 20px;
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.82rem;
         }
 
         footer a {
-            color: var(--primary);
-            text-decoration: none;
+            color: var(--text);
         }
 
-        @media (max-width: 600px) {
-            .tabs { flex-wrap: wrap; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .inline-form { flex-direction: column; }
-            header h1 { font-size: 1.6rem; }
+        @media (max-width: 760px) {
+            .hero-grid,
+            .section-split,
+            .grid-3,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
 <body>
-    <div style="background: #1a1a2e; color: #e94560; text-align: center; padding: 8px; font-size: 14px; border-bottom: 1px solid #e94560;">
-      🔴 Live Demo — Connected to GenLayer Testnet | Contract: 0xBDd0...Ce3Fc | 
-      <a href="https://github.com/tranhop26/smart-bounty-verifier" target="_blank" style="color: #0f3460; background: #e94560; padding: 2px 8px; border-radius: 4px; text-decoration: none;">View Source on GitHub</a>
-    </div>
     <div class="container">
-        <header>
-            <h1>🏆 Smart Bounty Verifier</h1>
-            <p>AI-Powered Bounty Verification on GenLayer</p>
-        </header>
-
-        <!-- Connection Status -->
-        <div class="status-bar">
-            <div class="status-dot" id="statusDot"></div>
-            <span class="status-text" id="statusText">Disconnected</span>
-            <span class="status-text">|</span>
-            <span class="status-text" id="contractAddr">No contract</span>
+        <div class="banner">
+            This dApp uses a real wallet-backed GenLayerJS flow for writes and real contract reads for state. Serve it over HTTP and use a supported wallet such as MetaMask.
+            <a href="https://github.com/tranhop26/smart-bounty-verifier" target="_blank" rel="noopener noreferrer">View source</a>
         </div>
 
-        <!-- Config Section -->
-        <div class="config-section">
-            <h3>⚙️ Connection Settings</h3>
-            <div class="inline-form">
-                <div class="form-group">
-                    <label>GenLayer RPC URL</label>
-                    <input type="text" id="rpcUrl" value="https://studio.genlayer.com/api" placeholder="https://studio.genlayer.com/api">
+        <section class="hero-grid">
+            <div class="hero-card">
+                <div class="hero-eyebrow">Receipt-first verification</div>
+                <h2>Proof before polish.</h2>
+                <p>
+                    This interface is built to make one thing obvious: a bounty only becomes real when the contract state, wallet-signed transaction, and receipt-backed outcome all line up. No placeholder dashboards, no invented verifier output, no silent fallback to demo mode.
+                </p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary" id="heroConnect">Connect dApp</button>
+                    <button class="btn btn-secondary" id="heroWallet">Connect Wallet</button>
                 </div>
-                <div class="form-group">
-                    <label>Contract Address</label>
-                    <input type="text" id="contractAddress" placeholder="0x..." value="0xBDd0e1073665ADd7C64a4F2779b84314644Ce3Fc">
+                <div class="hero-kpis">
+                    <div class="hero-kpi">
+                        <strong>Live reads</strong>
+                        <span>`readContract()` drives state shown in the dashboard and inspect view.</span>
+                    </div>
+                    <div class="hero-kpi">
+                        <strong>Signed writes</strong>
+                        <span>Every create, submit, and verify action goes through a wallet-backed client.</span>
+                    </div>
+                    <div class="hero-kpi">
+                        <strong>Receipt discipline</strong>
+                        <span>The UI waits for a real receipt before it calls anything successful.</span>
+                    </div>
                 </div>
-                <button class="btn btn-primary" onclick="connect()">Connect</button>
+            </div>
+
+            <aside class="proof-card">
+                <h3>What Counts As Real Here</h3>
+                <div class="proof-list">
+                    <div class="proof-item proof-live">
+                        <strong>Chain state</strong>
+                        <span>Dashboard and inspect data come from the deployed contract, not static JSON bundled in the page.</span>
+                    </div>
+                    <div class="proof-item proof-wallet">
+                        <strong>Wallet authority</strong>
+                        <span>Write actions require an actual browser wallet and network switch through GenLayerJS.</span>
+                    </div>
+                    <div class="proof-item proof-ai">
+                        <strong>Verifier honesty</strong>
+                        <span>If evidence fetch fails, the contract fails closed instead of claiming a pass from incomplete data.</span>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <header>
+            <h1>Smart Bounty Verifier</h1>
+            <p>AI-assisted bounty verification on GenLayer with live contract reads, wallet-backed writes, and receipt-aware status updates.</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-row">
+                <div class="status-dot" id="statusDot"></div>
+                <span class="status-text" id="statusText">Disconnected</span>
+                <span class="status-text">|</span>
+                <span class="status-text" id="contractAddr">No contract</span>
+            </div>
+            <div class="status-row">
+                <span class="wallet-pill" id="walletAddress">Wallet not connected</span>
+                <button class="btn btn-secondary" id="btnWallet">Connect Wallet</button>
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-            <button class="tab" onclick="switchTab('create')">➕ Create</button>
-            <button class="tab" onclick="switchTab('submit')">📤 Submit</button>
-            <button class="tab" onclick="switchTab('verify')">🤖 Verify</button>
-            <button class="tab" onclick="switchTab('inspect')">🔍 Inspect</button>
+        <div class="config-section">
+            <h3>Connection Settings</h3>
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label for="networkSelect">Network</label>
+                    <select id="networkSelect">
+                        <option value="studionet" selected>Studionet</option>
+                        <option value="localnet">Localnet</option>
+                        <option value="testnetBradbury">Testnet Bradbury</option>
+                        <option value="testnetAsimov">Testnet Asimov</option>
+                    </select>
+                    <small>Match this to the network where your contract is actually deployed.</small>
+                </div>
+                <div class="form-group">
+                    <label for="rpcUrl">RPC URL</label>
+                    <input type="text" id="rpcUrl" value="https://studio.genlayer.com/api" placeholder="https://studio.genlayer.com/api">
+                    <small>Defaults can be overridden if you run your own endpoint.</small>
+                </div>
+                <div class="form-group">
+                    <label for="contractAddress">Contract Address</label>
+                    <input type="text" id="contractAddress" value="" placeholder="0x...">
+                    <small>Reads and writes both target this exact contract address.</small>
+                </div>
+            </div>
+            <div class="button-row">
+                <button class="btn btn-primary" id="btnConnect">Connect dApp</button>
+                <button class="btn btn-secondary" id="btnRefresh">Refresh State</button>
+            </div>
+            <div class="inline-message" id="connectHint">
+                <h4>How this flow works</h4>
+                <pre>Reads use GenLayerJS readContract(). Writes use a wallet-backed GenLayerJS client, call connect() for the selected network, send writeContract(), then wait for a receipt before showing success.</pre>
+            </div>
         </div>
 
-        <!-- Dashboard Panel -->
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">Dashboard</button>
+            <button class="tab" data-tab="create">Create</button>
+            <button class="tab" data-tab="submit">Submit</button>
+            <button class="tab" data-tab="verify">Verify</button>
+            <button class="tab" data-tab="inspect">Inspect</button>
+        </div>
+
         <div class="panel active" id="panel-dashboard">
-            <h2>📊 Dashboard</h2>
-            <div class="stats-grid" id="statsGrid">
+            <h2>Dashboard</h2>
+            <p class="panel-note">Dashboard data comes from live contract reads. If reads fail, the UI shows an error instead of substituting fake data.</p>
+            <div class="section-split">
+                <div class="callout-card">
+                    <h4>Interaction Model</h4>
+                    <p>The dApp follows a narrow contract discipline: read current state, send one explicit write, wait for the receipt, then read state again. That pattern keeps the UI aligned with what the chain actually accepted.</p>
+                </div>
+                <div class="callout-card">
+                    <h4>Operator Checklist</h4>
+                    <ul>
+                        <li>Choose the right network.</li>
+                        <li>Target the exact deployed contract.</li>
+                        <li>Connect reads before trusting the dashboard.</li>
+                        <li>Connect wallet before write actions.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="number" id="stat-total">—</div>
+                    <div class="number" id="stat-total">-</div>
                     <div class="label">Total</div>
                 </div>
                 <div class="stat-card">
-                    <div class="number" id="stat-open">—</div>
+                    <div class="number" id="stat-open">-</div>
                     <div class="label">Open</div>
                 </div>
                 <div class="stat-card">
-                    <div class="number" id="stat-submitted">—</div>
+                    <div class="number" id="stat-submitted">-</div>
                     <div class="label">Submitted</div>
                 </div>
                 <div class="stat-card">
-                    <div class="number" id="stat-verified">—</div>
+                    <div class="number" id="stat-verified">-</div>
                     <div class="label">Verified</div>
                 </div>
                 <div class="stat-card">
-                    <div class="number" id="stat-rejected">—</div>
+                    <div class="number" id="stat-rejected">-</div>
                     <div class="label">Rejected</div>
                 </div>
             </div>
-            <h3 style="margin-bottom:12px; font-size:1rem;">Recent Bounties</h3>
+            <h3 style="margin-bottom: 12px; font-size: 1rem;">Recent Bounties</h3>
             <div class="bounty-list" id="bountyList">
-                <p style="color:var(--text-muted); font-size:0.85rem;">Connect to a contract to view bounties.</p>
+                <p class="panel-note">Connect to a deployed contract to load current state.</p>
             </div>
         </div>
 
-        <!-- Create Panel -->
         <div class="panel" id="panel-create">
-            <h2>➕ Create Bounty</h2>
+            <h2>Create Bounty</h2>
+            <p class="panel-note">This sends a real write transaction and waits for the receipt before reporting success.</p>
             <div class="form-group">
-                <label>Requirements (one per line)</label>
-                <textarea id="createReqs" placeholder="Has README with setup instructions&#10;Has unit tests&#10;Has CI/CD pipeline"></textarea>
-                <small>Each line becomes one requirement the AI will check</small>
+                <label for="createReqs">Requirements</label>
+                <textarea id="createReqs" placeholder="One requirement per line&#10;Has README&#10;Has tests&#10;Has deployment guide"></textarea>
+                <small>Each non-empty line becomes one requirement in the on-chain JSON array.</small>
             </div>
-            <div class="form-group">
-                <label>Source URL</label>
-                <input type="text" id="createSourceUrl" placeholder="https://github.com/org/repo">
-                <small>Reference URL for the bounty (e.g., original spec or repo)</small>
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="createSourceUrl">Source URL</label>
+                    <input type="text" id="createSourceUrl" placeholder="https://github.com/example/repo">
+                    <small>The contract accepts only public http or https URLs.</small>
+                </div>
+                <div class="form-group">
+                    <label for="createThreshold">Pass Threshold (%)</label>
+                    <input type="number" id="createThreshold" value="100" min="1" max="100">
+                    <small>1 to 100 only. The contract rejects zero-threshold bounties.</small>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Pass Threshold (%)</label>
-                <input type="number" id="createThreshold" value="100" min="0" max="100">
-                <small>Percentage of requirements that must pass (100 = all must pass)</small>
-            </div>
-            <button class="btn btn-primary" onclick="createBounty()" id="btnCreate">🚀 Create Bounty</button>
+            <button class="btn btn-primary" id="btnCreate">Create Bounty</button>
             <div class="result-box" id="createResult" style="display:none;">
                 <h4>Transaction Result</h4>
                 <pre id="createResultText"></pre>
             </div>
         </div>
 
-        <!-- Submit Panel -->
         <div class="panel" id="panel-submit">
-            <h2>📤 Submit Work</h2>
-            <div class="form-group">
-                <label>Bounty ID</label>
-                <input type="text" id="submitBountyId" placeholder="0">
+            <h2>Submit Work</h2>
+            <p class="panel-note">Submission URLs should point to the actual deliverable. The contract rejects private or local targets.</p>
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label for="submitBountyId">Bounty ID</label>
+                    <input type="text" id="submitBountyId" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label for="submitUrl">Submission URL</label>
+                    <input type="text" id="submitUrl" placeholder="https://github.com/your-username/your-project">
+                </div>
             </div>
-            <div class="form-group">
-                <label>Submission URL</label>
-                <input type="text" id="submitUrl" placeholder="https://github.com/your-username/your-project">
-                <small>URL to your completed work (will be fetched and analyzed by AI)</small>
-            </div>
-            <button class="btn btn-warning" onclick="submitWork()" id="btnSubmit">📤 Submit Work</button>
+            <button class="btn btn-warning" id="btnSubmit">Submit Work</button>
             <div class="result-box" id="submitResult" style="display:none;">
                 <h4>Transaction Result</h4>
                 <pre id="submitResultText"></pre>
             </div>
         </div>
 
-        <!-- Verify Panel -->
         <div class="panel" id="panel-verify">
-            <h2>🤖 AI Verification</h2>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:16px;">
-                Triggers the AI to fetch the submission URL, evaluate each requirement, and reach consensus among validators.
-            </p>
+            <h2>AI Verification</h2>
+            <p class="panel-note">Verification triggers a real contract write, then the UI waits for the transaction receipt and fetches the updated bounty before rendering the verdict.</p>
             <div class="form-group">
-                <label>Bounty ID to Verify</label>
+                <label for="verifyBountyId">Bounty ID to Verify</label>
                 <input type="text" id="verifyBountyId" placeholder="0">
             </div>
-            <button class="btn btn-success" onclick="verifyBounty()" id="btnVerify">🤖 Run AI Verification</button>
+            <button class="btn btn-success" id="btnVerify">Run AI Verification</button>
             <div class="result-box" id="verifyResult" style="display:none;">
                 <h4>Verification Result</h4>
                 <pre id="verifyResultText"></pre>
             </div>
         </div>
 
-        <!-- Inspect Panel -->
         <div class="panel" id="panel-inspect">
-            <h2>🔍 Inspect Bounty</h2>
-            <div class="inline-form" style="margin-bottom:16px;">
+            <h2>Inspect Bounty</h2>
+            <p class="panel-note">Inspect reads the selected bounty from the contract and renders both raw state and per-requirement verdict details.</p>
+            <div class="grid grid-2">
                 <div class="form-group">
-                    <label>Bounty ID</label>
+                    <label for="inspectBountyId">Bounty ID</label>
                     <input type="text" id="inspectBountyId" placeholder="0">
                 </div>
-                <button class="btn btn-primary" onclick="inspectBounty()">🔍 Inspect</button>
+                <div class="button-row" style="align-self:end;">
+                    <button class="btn btn-primary" id="btnInspect">Inspect</button>
+                </div>
             </div>
             <div id="inspectOutput"></div>
         </div>
 
         <footer>
-            <p>Built on <a href="https://genlayer.com" target="_blank">GenLayer</a> — Intelligent Contract Platform</p>
-            <p style="margin-top:6px;">
-                <a href="https://github.com/tranhop26/smart-bounty-verifier" target="_blank">GitHub Repository</a>
+            <p>Built on <a href="https://genlayer.com" target="_blank" rel="noopener noreferrer">GenLayer</a></p>
+            <p style="margin-top: 6px;">
+                <a href="https://github.com/tranhop26/smart-bounty-verifier" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
             </p>
         </footer>
     </div>
 
-    <script>
-        // ===== DEMO DATA (Real verification result from GenLayer Studio) =====
-        const DEMO_DATA = {
-            bounties: [
-                {
-                    id: 0,
-                    creator: "0x21b45103dd05c43969daF3CbB4277391777e2eC7",
-                    requirements_json: JSON.stringify([
-                        "Has a comprehensive README with setup instructions",
-                        "Contains Python smart contract using GenLayer SDK",
-                        "Includes unit tests",
-                        "Has frontend dApp connecting to contract",
-                        "Contract deployed on GenLayer testnet"
-                    ]),
-                    source_url: "https://github.com/tranhop26/smart-bounty-verifier",
-                    submission_url: "https://github.com/tranhop26/smart-bounty-verifier",
-                    submitter: "0x21b45103dd05c43969daF3CbB4277391777e2eC7",
-                    status: "VERIFIED",
-                    verdict_json: JSON.stringify({
-                        verdict: "PASS",
-                        passed_count: 5,
-                        total_count: 5,
-                        details: [
-                            { requirement: "Has a comprehensive README with setup instructions", result: "PASS", reason: "The README includes an overview, architecture, quick start guide, deployment instructions, and frontend setup steps." },
-                            { requirement: "Contains Python smart contract using GenLayer SDK", result: "PASS", reason: "The repository contains 'contracts/smart_bounty_verifier.py' which utilizes GenLayer specific features like gl.nondet.web and gl.vm.run_nondet_unsafe." },
-                            { requirement: "Includes unit tests", result: "PASS", reason: "The repository includes a 'tests/' directory with 'test_contract_logic.py' and instructions on how to run them using pytest." },
-                            { requirement: "Has frontend dApp connecting to contract", result: "PASS", reason: "A frontend dApp is provided in the 'frontend/' directory (index.html) that connects to the GenLayer JSON-RPC API." },
-                            { requirement: "Contract deployed on GenLayer testnet", result: "PASS", reason: "The submission provides a specific contract address (0xBDd0e1073665ADd7C64a4F2779b84314644Ce3Fc) deployed on the GenLayer Testnet (Studio)." }
-                        ]
-                    }),
-                    passed_count: 5,
-                    total_count: 5,
-                    threshold: 3
+    <script type="module">
+        import { createClient } from "https://esm.sh/genlayer-js";
+        import { localnet, studionet, testnetAsimov, testnetBradbury } from "https://esm.sh/genlayer-js/chains";
+        import { ExecutionResult, TransactionStatus } from "https://esm.sh/genlayer-js/types";
+
+        const NETWORKS = {
+            localnet: {
+                key: "localnet",
+                label: "Localnet",
+                chain: localnet,
+                defaultRpc: "http://localhost:4000/api",
+                connectKey: "localnet"
+            },
+            studionet: {
+                key: "studionet",
+                label: "Studionet",
+                chain: studionet,
+                defaultRpc: "https://studio.genlayer.com/api",
+                chainIdHex: "0xf22f",
+                switchConfig: {
+                    chainId: "0xf22f",
+                    chainName: "GenLayer Studionet",
+                    nativeCurrency: {
+                        name: "GEN",
+                        symbol: "GEN",
+                        decimals: 18
+                    },
+                    rpcUrls: ["https://studio.genlayer.com/api"],
+                    blockExplorerUrls: ["https://explorer-studio.genlayer.com"]
                 }
-            ],
-            stats: { total: 1, open: 0, submitted: 0, verified: 1, rejected: 0 }
+            },
+            testnetAsimov: {
+                key: "testnetAsimov",
+                label: "Testnet Asimov",
+                chain: testnetAsimov,
+                defaultRpc: "https://rpc-asimov.genlayer.com",
+                chainIdHex: "0x107d",
+                switchConfig: {
+                    chainId: "0x107d",
+                    chainName: "GenLayer Testnet Asimov",
+                    nativeCurrency: {
+                        name: "GEN",
+                        symbol: "GEN",
+                        decimals: 18
+                    },
+                    rpcUrls: ["https://rpc-asimov.genlayer.com"],
+                    blockExplorerUrls: ["https://explorer-asimov.genlayer.com"]
+                }
+            },
+            testnetBradbury: {
+                key: "testnetBradbury",
+                label: "Testnet Bradbury",
+                chain: testnetBradbury,
+                defaultRpc: "https://rpc-bradbury.genlayer.com",
+                chainIdHex: "0x107d",
+                switchConfig: {
+                    chainId: "0x107d",
+                    chainName: "GenLayer Testnet Bradbury",
+                    nativeCurrency: {
+                        name: "GEN",
+                        symbol: "GEN",
+                        decimals: 18
+                    },
+                    rpcUrls: ["https://rpc-bradbury.genlayer.com"],
+                    blockExplorerUrls: ["https://explorer-bradbury.genlayer.com"]
+                }
+            }
+        };
+        NETWORKS.localnet.chainIdHex = "0xeec7";
+        NETWORKS.localnet.switchConfig = {
+            chainId: "0xeec7",
+            chainName: "GenLayer Localnet",
+            nativeCurrency: {
+                name: "GEN",
+                symbol: "GEN",
+                decimals: 18
+            },
+            rpcUrls: ["http://localhost:4000/api"]
         };
 
-        let USE_DEMO = false;
-
-        // Helpers for demo / UI status
-        function updateStatus(status, addr) {
-            document.getElementById('statusDot').classList.add('connected');
-            document.getElementById('statusText').textContent = status;
-            document.getElementById('contractAddr').textContent = 
-                addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : 'No contract';
-        }
-
-        function updateStats(stats) {
-            document.getElementById('stat-total').textContent = stats.total || 0;
-            document.getElementById('stat-open').textContent = stats.open || 0;
-            document.getElementById('stat-submitted').textContent = stats.submitted || 0;
-            document.getElementById('stat-verified').textContent = stats.verified || 0;
-            document.getElementById('stat-rejected').textContent = stats.rejected || 0;
-        }
-
-        function displayBountyList(bounties) {
-            renderBountyList(bounties);
-        }
-
-        function displayBountyResult(bounty, bountyId) {
-            const output = document.getElementById('inspectOutput');
-            let verdictHtml = '';
-            if (bounty.verdict_json) {
-                try {
-                    const verdict = JSON.parse(bounty.verdict_json);
-                    if (verdict.details) {
-                        verdictHtml = '<h4 style="margin:16px 0 8px;">Requirement Details:</h4>' +
-                            verdict.details.map(d => `
-                                <div class="verdict-detail verdict-${d.result.toLowerCase()}">
-                                    <div class="req">${d.result === 'PASS' ? '✅' : '❌'} ${d.requirement}</div>
-                                    <div class="reason">${d.reason}</div>
-                                </div>
-                            `).join('');
-                    }
-                } catch(e) {}
-            }
-
-            output.innerHTML = `
-                <div class="result-box">
-                    <h4>Bounty #${bountyId} Details</h4>
-                    <pre>${JSON.stringify(bounty, null, 2)}</pre>
-                </div>
-                ${verdictHtml}
-            `;
-        }
-
-        function showError(message) {
-            document.getElementById('inspectOutput').innerHTML = 
-                `<div class="result-box"><h4>Error</h4><pre>${message}</pre></div>`;
-        }
-
-        // ═══════════════════════════════════════════════════
-        // GenLayer JSON-RPC Client
-        // ═══════════════════════════════════════════════════
-        
-        let config = {
-            rpcUrl: '',
-            contractAddress: '',
-            connected: false
+        const state = {
+            networkKey: "studionet",
+            rpcUrl: "https://studio.genlayer.com/api",
+            contractAddress: "",
+            walletAddress: "",
+            readConnected: false,
+            readClient: null,
+            writeClient: null
         };
 
-        // Tab switching
-        function switchTab(name) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById('panel-' + name).classList.add('active');
+        const refs = {
+            statusDot: document.getElementById("statusDot"),
+            statusText: document.getElementById("statusText"),
+            contractAddr: document.getElementById("contractAddr"),
+            walletAddress: document.getElementById("walletAddress"),
+            networkSelect: document.getElementById("networkSelect"),
+            rpcUrl: document.getElementById("rpcUrl"),
+            contractAddress: document.getElementById("contractAddress"),
+            bountyList: document.getElementById("bountyList"),
+            inspectOutput: document.getElementById("inspectOutput"),
+            stats: {
+                total: document.getElementById("stat-total"),
+                open: document.getElementById("stat-open"),
+                submitted: document.getElementById("stat-submitted"),
+                verified: document.getElementById("stat-verified"),
+                rejected: document.getElementById("stat-rejected")
+            }
+        };
+
+        function selectedNetwork() {
+            return NETWORKS[state.networkKey];
         }
 
-        // Connect to contract
-        async function connect() {
-            config.rpcUrl = document.getElementById('rpcUrl').value.trim();
-            config.contractAddress = document.getElementById('contractAddress').value.trim();
-
-            if (!config.rpcUrl || !config.contractAddress) {
-                alert('Please fill in both RPC URL and Contract Address');
-                return;
-            }
-
-            try {
-                // Test connection by calling get_stats
-                const stats = await callRead('get_stats', []);
-                USE_DEMO = false;
-                updateStatus('Connected', config.contractAddress);
-            } catch (e) {
-                // Fallback to demo mode with real data
-                USE_DEMO = true;
-                updateStatus('Connected (Demo Mode — Real Data)', config.contractAddress);
-            }
-            await loadDashboard();
+        function updateStatus(message, isConnected) {
+            refs.statusDot.classList.toggle("connected", Boolean(isConnected));
+            refs.statusText.textContent = message;
+            refs.contractAddr.textContent = state.contractAddress
+                ? `${state.contractAddress.slice(0, 6)}...${state.contractAddress.slice(-4)}`
+                : "No contract";
+            refs.walletAddress.textContent = state.walletAddress
+                ? `Wallet ${state.walletAddress.slice(0, 6)}...${state.walletAddress.slice(-4)}`
+                : "Wallet not connected";
         }
 
-        // GenLayer JSON-RPC call (read)
-        async function callRead(method, args) {
-            const payload = {
-                jsonrpc: '2.0',
-                id: Date.now(),
-                method: 'call_contract_function',
-                params: {
-                    contract_address: config.contractAddress,
-                    function_name: method,
-                    function_args: args
-                }
-            };
-
-            const res = await fetch(config.rpcUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+        function resetStats() {
+            Object.values(refs.stats).forEach((node) => {
+                node.textContent = "-";
             });
-
-            const json = await res.json();
-            if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
-            return json.result;
         }
 
-        // GenLayer JSON-RPC call (write)
-        async function callWrite(method, args) {
-            const payload = {
-                jsonrpc: '2.0',
-                id: Date.now(),
-                method: 'send_transaction',
-                params: {
-                    contract_address: config.contractAddress,
-                    function_name: method,
-                    function_args: args
-                }
-            };
-
-            const res = await fetch(config.rpcUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const json = await res.json();
-            if (json.error) throw new Error(json.error.message || JSON.stringify(json.error));
-            return json.result;
+        function setStats(stats) {
+            refs.stats.total.textContent = stats.total ?? 0;
+            refs.stats.open.textContent = stats.open ?? 0;
+            refs.stats.submitted.textContent = stats.submitted ?? 0;
+            refs.stats.verified.textContent = stats.verified ?? 0;
+            refs.stats.rejected.textContent = stats.rejected ?? 0;
         }
 
-        // Load dashboard data
-        async function loadDashboard() {
-            if (USE_DEMO) {
-                updateStats(DEMO_DATA.stats);
-                displayBountyList(DEMO_DATA.bounties);
-                return;
-            }
-
-            try {
-                // Load stats
-                const statsRaw = await callRead('get_stats', []);
-                const stats = JSON.parse(statsRaw);
-                updateStats(stats);
-
-                // Load bounties
-                const bountiesRaw = await callRead('get_all_bounties', []);
-                const bounties = JSON.parse(bountiesRaw);
-                displayBountyList(bounties);
-            } catch (e) {
-                console.log('Dashboard load error:', e);
-                document.getElementById('bountyList').innerHTML = 
-                    '<p style="color:var(--text-muted); font-size:0.85rem;">Could not load data. Contract may not be deployed yet.</p>';
+        function clearNode(node) {
+            while (node.firstChild) {
+                node.removeChild(node.firstChild);
             }
         }
 
-        // Render bounty list
-        function renderBountyList(bounties) {
-            const container = document.getElementById('bountyList');
-            if (!bounties || bounties.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-muted);">No bounties yet. Create one!</p>';
-                return;
-            }
+        function appendNotice(container, title, body) {
+            clearNode(container);
+            const wrapper = document.createElement("div");
+            wrapper.className = "inline-message";
 
-            container.innerHTML = bounties.map((b, i) => {
-                const reqs = JSON.parse(b.requirements_json || '[]');
-                return `
-                    <div class="bounty-card status-${b.status}">
-                        <div class="bounty-header">
-                            <span class="bounty-id">Bounty #${i}</span>
-                            <span class="badge badge-${b.status}">${b.status}</span>
-                        </div>
-                        <div class="bounty-meta">
-                            <span>📋 ${reqs.length} requirements</span>
-                            <span>✅ ${b.passed_count}/${b.total_count} passed</span>
-                            <span>🎯 Threshold: ${b.threshold}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            const heading = document.createElement("h4");
+            heading.textContent = title;
+
+            const pre = document.createElement("pre");
+            pre.textContent = body;
+
+            wrapper.appendChild(heading);
+            wrapper.appendChild(pre);
+            container.appendChild(wrapper);
         }
 
-        // Create bounty
-        async function createBounty() {
-            const reqsText = document.getElementById('createReqs').value.trim();
-            const sourceUrl = document.getElementById('createSourceUrl').value.trim();
-            const threshold = document.getElementById('createThreshold').value;
-
-            if (!reqsText) { alert('Please enter at least one requirement'); return; }
-
-            const reqs = reqsText.split('\n').map(r => r.trim()).filter(r => r);
-            const requirementsJson = JSON.stringify(reqs);
-
-            const btn = document.getElementById('btnCreate');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Creating...';
-
-            try {
-                const result = await callWrite('create_bounty', [requirementsJson, sourceUrl, threshold]);
-                showResult('createResult', 'createResultText', {
-                    status: 'SUCCESS',
-                    message: 'Bounty created successfully!',
-                    requirements: reqs,
-                    threshold_pct: threshold,
-                    tx_result: result
-                });
-                if (config.connected) await loadDashboard();
-            } catch (e) {
-                showResult('createResult', 'createResultText', {
-                    status: 'ERROR',
-                    message: e.message,
-                    hint: 'Make sure you are connected to a running GenLayer node'
-                });
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = '🚀 Create Bounty';
-        }
-
-        // Submit work
-        async function submitWork() {
-            const bountyId = document.getElementById('submitBountyId').value.trim();
-            const url = document.getElementById('submitUrl').value.trim();
-
-            if (!bountyId || !url) { alert('Please fill in both fields'); return; }
-
-            const btn = document.getElementById('btnSubmit');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> Submitting...';
-
-            try {
-                const result = await callWrite('submit', [bountyId, url]);
-                showResult('submitResult', 'submitResultText', {
-                    status: 'SUCCESS',
-                    message: `Work submitted for Bounty #${bountyId}`,
-                    submission_url: url,
-                    tx_result: result
-                });
-                if (config.connected) await loadDashboard();
-            } catch (e) {
-                showResult('submitResult', 'submitResultText', {
-                    status: 'ERROR',
-                    message: e.message
-                });
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = '📤 Submit Work';
-        }
-
-        // Verify bounty
-        async function verifyBounty() {
-            const bountyId = document.getElementById('verifyBountyId').value.trim();
-            if (!bountyId) { alert('Please enter a bounty ID'); return; }
-
-            const btn = document.getElementById('btnVerify');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading"></span> AI Verifying (this may take a moment)...';
-
-            try {
-                const result = await callWrite('verify', [bountyId]);
-                
-                // Fetch updated bounty
-                const bountyRaw = await callRead('get_bounty', [bountyId]);
-                const bounty = JSON.parse(bountyRaw);
-                
-                let verdict = {};
-                try { verdict = JSON.parse(bounty.verdict_json); } catch(e) {}
-
-                showResult('verifyResult', 'verifyResultText', {
-                    status: bounty.status === 'VERIFIED' ? 'PASS ✅' : 'FAIL ❌',
-                    bounty_status: bounty.status,
-                    passed: `${verdict.passed_count || 0}/${verdict.total_count || 0}`,
-                    verdict: verdict,
-                    tx_result: result
-                });
-                
-                if (config.connected) await loadDashboard();
-            } catch (e) {
-                showResult('verifyResult', 'verifyResultText', {
-                    status: 'ERROR',
-                    message: e.message,
-                    hint: 'Verification requires the bounty to be in SUBMITTED status'
-                });
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = '🤖 Run AI Verification';
-        }
-
-        // Inspect bounty
-        async function inspectBounty() {
-            const bountyIdStr = document.getElementById('inspectBountyId').value.trim();
-            if (!bountyIdStr) { alert('Please enter a bounty ID'); return; }
-            const bountyId = parseInt(bountyIdStr);
-
-            const output = document.getElementById('inspectOutput');
-            output.innerHTML = '<p><span class="loading"></span> Loading...</p>';
-
-            if (USE_DEMO) {
-                const bounty = DEMO_DATA.bounties[bountyId];
-                if (bounty) {
-                    displayBountyResult(bounty, bountyId);
-                } else {
-                    showError('Bounty not found in demo data');
-                }
-                return;
-            }
-
-            try {
-                const bountyRaw = await callRead('get_bounty', [String(bountyId)]);
-                const bounty = JSON.parse(bountyRaw);
-                displayBountyResult(bounty, bountyId);
-            } catch (e) {
-                // Fallback to demo
-                const bounty = DEMO_DATA.bounties[bountyId];
-                if (bounty) {
-                    displayBountyResult(bounty, bountyId);
-                } else {
-                    showError(e.message);
-                }
-            }
-        }
-
-        // Show result helper
         function showResult(boxId, textId, data) {
-            document.getElementById(boxId).style.display = 'block';
+            document.getElementById(boxId).style.display = "block";
             document.getElementById(textId).textContent = JSON.stringify(data, null, 2);
         }
+
+        function normalizeFormState() {
+            state.networkKey = refs.networkSelect.value;
+            const network = selectedNetwork();
+            const rpcValue = refs.rpcUrl.value.trim();
+            state.rpcUrl = rpcValue || network.defaultRpc;
+            state.contractAddress = refs.contractAddress.value.trim();
+            state.readConnected = false;
+            state.readClient = null;
+            state.writeClient = null;
+        }
+
+        function buildClientOptions(includeWallet) {
+            const options = {
+                chain: selectedNetwork().chain
+            };
+            if (state.rpcUrl) {
+                options.endpoint = state.rpcUrl;
+            }
+            if (includeWallet) {
+                options.account = state.walletAddress;
+                options.provider = window.ethereum;
+            }
+            return options;
+        }
+
+        function ensureAddressConfigured() {
+            normalizeFormState();
+            if (!state.contractAddress) {
+                throw new Error("Please enter the deployed contract address.");
+            }
+        }
+
+        function ensureWalletAvailable() {
+            if (!window.ethereum) {
+                throw new Error("No browser wallet detected. Install MetaMask or another wallet that exposes window.ethereum.");
+            }
+            if (!state.walletAddress) {
+                throw new Error("Connect your wallet before sending a transaction.");
+            }
+        }
+
+        function safeJsonParse(raw, label) {
+            try {
+                return JSON.parse(raw);
+            } catch (error) {
+                throw new Error(`Could not parse ${label} response: ${error.message}`);
+            }
+        }
+
+        async function buildReadClient() {
+            state.networkKey = refs.networkSelect.value;
+            state.rpcUrl = refs.rpcUrl.value.trim() || selectedNetwork().defaultRpc;
+            state.contractAddress = refs.contractAddress.value.trim();
+            state.readClient = createClient(buildClientOptions(false));
+            return state.readClient;
+        }
+
+        async function buildWriteClient() {
+            ensureWalletAvailable();
+            state.networkKey = refs.networkSelect.value;
+            state.rpcUrl = refs.rpcUrl.value.trim() || selectedNetwork().defaultRpc;
+            state.contractAddress = refs.contractAddress.value.trim();
+            state.writeClient = createClient(buildClientOptions(true));
+            return state.writeClient;
+        }
+
+        async function ensureWalletOnSelectedNetwork() {
+            ensureWalletAvailable();
+            const network = selectedNetwork();
+            const targetChainId = network.chainIdHex;
+
+            try {
+                const currentChainId = await window.ethereum.request({ method: "eth_chainId" });
+                if (String(currentChainId).toLowerCase() === String(targetChainId).toLowerCase()) {
+                    return;
+                }
+            } catch (error) {
+                // Continue to switch attempt below.
+            }
+
+            try {
+                await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: targetChainId }]
+                });
+            } catch (error) {
+                if (error && (error.code === 4902 || error.code === -32603)) {
+                    await window.ethereum.request({
+                        method: "wallet_addEthereumChain",
+                        params: [network.switchConfig]
+                    });
+                    return;
+                }
+                throw error;
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                ensureAddressConfigured();
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                state.walletAddress = accounts[0] || "";
+                await ensureWalletOnSelectedNetwork();
+                await buildWriteClient();
+                updateStatus(
+                    state.readConnected
+                        ? `Reads and wallet ready on ${selectedNetwork().label}`
+                        : `Wallet ready on ${selectedNetwork().label}; connect reads to load contract state`,
+                    true
+                );
+            } catch (error) {
+                updateStatus("Wallet connection failed", false);
+                throw error;
+            }
+        }
+
+        async function readContract(functionName, args = []) {
+            ensureAddressConfigured();
+            const client = state.readClient || await buildReadClient();
+            return client.readContract({
+                address: state.contractAddress,
+                functionName,
+                args,
+                stateStatus: "accepted"
+            });
+        }
+
+        async function writeContract(functionName, args = []) {
+            ensureAddressConfigured();
+            const writeClient = state.writeClient || await buildWriteClient();
+            const txHash = await writeClient.writeContract({
+                address: state.contractAddress,
+                functionName,
+                args,
+                value: BigInt(0)
+            });
+
+            const readClient = state.readClient || await buildReadClient();
+            const receipt = await readClient.waitForTransactionReceipt({
+                hash: txHash,
+                status: TransactionStatus.ACCEPTED,
+                fullTransaction: false
+            });
+
+            const executionName = receipt.txExecutionResultName || receipt.txExecutionResult || "";
+            if (executionName && executionName !== ExecutionResult.FINISHED_WITH_RETURN) {
+                throw new Error(`Transaction reached receipt stage but execution result was ${executionName}.`);
+            }
+
+            return {
+                hash: txHash,
+                receipt
+            };
+        }
+
+        function renderBountyList(bounties) {
+            clearNode(refs.bountyList);
+            if (!Array.isArray(bounties) || bounties.length === 0) {
+                const text = document.createElement("p");
+                text.className = "panel-note";
+                text.textContent = "No bounties found yet.";
+                refs.bountyList.appendChild(text);
+                return;
+            }
+
+            bounties.forEach((bounty, index) => {
+                let reqs = [];
+                try {
+                    reqs = JSON.parse(bounty.requirements_json || "[]");
+                } catch (error) {
+                    reqs = [];
+                }
+
+                const card = document.createElement("div");
+                card.className = `bounty-card status-${bounty.status || "OPEN"}`;
+
+                const header = document.createElement("div");
+                header.className = "bounty-header";
+
+                const title = document.createElement("span");
+                title.className = "bounty-id";
+                title.textContent = `Bounty #${bounty.bounty_id ?? index}`;
+
+                const badge = document.createElement("span");
+                badge.className = `badge badge-${bounty.status || "OPEN"}`;
+                badge.textContent = bounty.status || "UNKNOWN";
+
+                const meta = document.createElement("div");
+                meta.className = "bounty-meta";
+                meta.textContent = `${reqs.length} requirements | ${bounty.passed_count || 0}/${bounty.total_count || 0} passed | Threshold: ${bounty.threshold || 0}`;
+
+                header.appendChild(title);
+                header.appendChild(badge);
+                card.appendChild(header);
+                card.appendChild(meta);
+                refs.bountyList.appendChild(card);
+            });
+        }
+
+        function renderInspect(bounty, bountyId) {
+            clearNode(refs.inspectOutput);
+
+            const resultBox = document.createElement("div");
+            resultBox.className = "result-box";
+
+            const heading = document.createElement("h4");
+            heading.textContent = `Bounty #${bountyId} Raw State`;
+
+            const pre = document.createElement("pre");
+            pre.textContent = JSON.stringify(bounty, null, 2);
+
+            resultBox.appendChild(heading);
+            resultBox.appendChild(pre);
+            refs.inspectOutput.appendChild(resultBox);
+
+            if (!bounty.verdict_json) {
+                return;
+            }
+
+            let verdict;
+            try {
+                verdict = JSON.parse(bounty.verdict_json);
+            } catch (error) {
+                appendNotice(refs.inspectOutput, "Verdict parsing failed", error.message);
+                return;
+            }
+
+            if (!Array.isArray(verdict.details)) {
+                return;
+            }
+
+            const detailWrapper = document.createElement("div");
+            detailWrapper.className = "verdict-list";
+
+            verdict.details.forEach((detail) => {
+                const box = document.createElement("div");
+                const result = String(detail.result || "FAIL").toUpperCase();
+                box.className = `verdict-detail ${result === "PASS" ? "verdict-pass" : "verdict-fail"}`;
+
+                const req = document.createElement("div");
+                req.className = "req";
+                req.textContent = `${result} - ${detail.requirement || "Requirement"}`;
+
+                const reason = document.createElement("div");
+                reason.className = "reason";
+                reason.textContent = detail.reason || "No reason provided";
+
+                box.appendChild(req);
+                box.appendChild(reason);
+                detailWrapper.appendChild(box);
+            });
+
+            refs.inspectOutput.appendChild(detailWrapper);
+        }
+
+        async function connectDapp() {
+            try {
+                ensureAddressConfigured();
+                await buildReadClient();
+                state.readConnected = true;
+                updateStatus(
+                    state.walletAddress
+                        ? `Reads and wallet ready on ${selectedNetwork().label}`
+                        : `Connected for reads on ${selectedNetwork().label}`,
+                    true
+                );
+                await loadDashboard();
+            } catch (error) {
+                state.readConnected = false;
+                updateStatus("Read connection failed", false);
+                appendNotice(refs.bountyList, "Connection error", error.message);
+                throw error;
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const statsRaw = await readContract("get_stats", []);
+                const stats = safeJsonParse(statsRaw, "get_stats");
+                setStats(stats);
+
+                const bountiesRaw = await readContract("get_all_bounties", []);
+                const bounties = safeJsonParse(bountiesRaw, "get_all_bounties");
+                renderBountyList(bounties);
+                return { stats, bounties };
+            } catch (error) {
+                resetStats();
+                appendNotice(refs.bountyList, "Dashboard unavailable", error.message);
+                throw error;
+            }
+        }
+
+        async function createBounty() {
+            const reqsText = document.getElementById("createReqs").value.trim();
+            const sourceUrl = document.getElementById("createSourceUrl").value.trim();
+            const threshold = Number(document.getElementById("createThreshold").value);
+            const button = document.getElementById("btnCreate");
+
+            if (!reqsText) {
+                alert("Please enter at least one requirement.");
+                return;
+            }
+
+            const requirements = reqsText.split("\n").map((item) => item.trim()).filter(Boolean);
+            if (requirements.length === 0) {
+                alert("Please enter at least one non-empty requirement.");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Creating...";
+
+            try {
+                const tx = await writeContract("create_bounty", [JSON.stringify(requirements), sourceUrl, threshold]);
+                showResult("createResult", "createResultText", {
+                    status: "SUCCESS",
+                    hash: tx.hash,
+                    requirements,
+                    threshold_pct: threshold,
+                    receipt: tx.receipt
+                });
+                await loadDashboard();
+            } catch (error) {
+                showResult("createResult", "createResultText", {
+                    status: "ERROR",
+                    message: error.message
+                });
+            } finally {
+                button.disabled = false;
+                button.textContent = "Create Bounty";
+            }
+        }
+
+        async function submitWork() {
+            const bountyId = document.getElementById("submitBountyId").value.trim();
+            const submissionUrl = document.getElementById("submitUrl").value.trim();
+            const button = document.getElementById("btnSubmit");
+
+            if (!bountyId || !submissionUrl) {
+                alert("Please fill in both bounty ID and submission URL.");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Submitting...";
+
+            try {
+                const tx = await writeContract("submit", [bountyId, submissionUrl]);
+                showResult("submitResult", "submitResultText", {
+                    status: "SUCCESS",
+                    hash: tx.hash,
+                    bounty_id: bountyId,
+                    submission_url: submissionUrl,
+                    receipt: tx.receipt
+                });
+                await loadDashboard();
+            } catch (error) {
+                showResult("submitResult", "submitResultText", {
+                    status: "ERROR",
+                    message: error.message
+                });
+            } finally {
+                button.disabled = false;
+                button.textContent = "Submit Work";
+            }
+        }
+
+        async function verifyBounty() {
+            const bountyId = document.getElementById("verifyBountyId").value.trim();
+            const button = document.getElementById("btnVerify");
+
+            if (!bountyId) {
+                alert("Please enter a bounty ID.");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Verifying...";
+
+            try {
+                const tx = await writeContract("verify", [bountyId]);
+                const bountyRaw = await readContract("get_bounty", [bountyId]);
+                const bounty = safeJsonParse(bountyRaw, "get_bounty");
+
+                let verdict = {};
+                if (bounty.verdict_json) {
+                    verdict = safeJsonParse(bounty.verdict_json, "verdict_json");
+                }
+
+                showResult("verifyResult", "verifyResultText", {
+                    status: bounty.status,
+                    hash: tx.hash,
+                    receipt: tx.receipt,
+                    verdict
+                });
+                await loadDashboard();
+            } catch (error) {
+                showResult("verifyResult", "verifyResultText", {
+                    status: "ERROR",
+                    message: error.message
+                });
+            } finally {
+                button.disabled = false;
+                button.textContent = "Run AI Verification";
+            }
+        }
+
+        async function inspectBounty() {
+            const bountyId = document.getElementById("inspectBountyId").value.trim();
+            if (!bountyId) {
+                alert("Please enter a bounty ID.");
+                return;
+            }
+
+            try {
+                const bountyRaw = await readContract("get_bounty", [bountyId]);
+                const bounty = safeJsonParse(bountyRaw, "get_bounty");
+                renderInspect(bounty, bountyId);
+            } catch (error) {
+                appendNotice(refs.inspectOutput, "Inspect failed", error.message);
+            }
+        }
+
+        document.querySelectorAll(".tab").forEach((button) => {
+            button.addEventListener("click", () => {
+                document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
+                document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
+                button.classList.add("active");
+                document.getElementById(`panel-${button.dataset.tab}`).classList.add("active");
+            });
+        });
+
+        refs.networkSelect.addEventListener("change", () => {
+            const next = NETWORKS[refs.networkSelect.value];
+            refs.rpcUrl.value = next.defaultRpc;
+            state.readConnected = false;
+            state.readClient = null;
+            state.writeClient = null;
+            updateStatus("Network changed; reconnect dApp and wallet", false);
+        });
+
+        document.getElementById("btnWallet").addEventListener("click", async () => {
+            try {
+                await connectWallet();
+            } catch (error) {
+                appendNotice(refs.inspectOutput, "Wallet connection failed", error.message);
+            }
+        });
+
+        document.getElementById("btnConnect").addEventListener("click", async () => {
+            try {
+                await connectDapp();
+            } catch (error) {
+                showResult("createResult", "createResultText", {
+                    status: "ERROR",
+                    message: error.message
+                });
+            }
+        });
+
+        document.getElementById("heroWallet").addEventListener("click", async () => {
+            try {
+                await connectWallet();
+            } catch (error) {
+                appendNotice(refs.inspectOutput, "Wallet connection failed", error.message);
+            }
+        });
+
+        document.getElementById("heroConnect").addEventListener("click", async () => {
+            try {
+                await connectDapp();
+            } catch (error) {
+                showResult("createResult", "createResultText", {
+                    status: "ERROR",
+                    message: error.message
+                });
+            }
+        });
+
+        document.getElementById("btnRefresh").addEventListener("click", async () => {
+            const button = document.getElementById("btnRefresh");
+            const originalLabel = button.textContent;
+            button.disabled = true;
+            button.textContent = "Refreshing...";
+
+            try {
+                if (!state.readClient || !state.readConnected) {
+                    await connectDapp();
+                    return;
+                }
+
+                updateStatus(`Refreshing state from ${selectedNetwork().label}...`, true);
+                const dashboard = await loadDashboard();
+                const bountyCount = Array.isArray(dashboard?.bounties) ? dashboard.bounties.length : 0;
+                updateStatus(
+                    state.walletAddress
+                        ? `Reads and wallet ready on ${selectedNetwork().label} · ${bountyCount} bounties loaded`
+                        : `Connected for reads on ${selectedNetwork().label} · ${bountyCount} bounties loaded`,
+                    true
+                );
+            } catch (error) {
+                updateStatus("Refresh failed", false);
+                showResult("createResult", "createResultText", {
+                    status: "ERROR",
+                    message: error.message
+                });
+            } finally {
+                button.disabled = false;
+                button.textContent = originalLabel;
+            }
+        });
+
+        document.getElementById("btnCreate").addEventListener("click", createBounty);
+        document.getElementById("btnSubmit").addEventListener("click", submitWork);
+        document.getElementById("btnVerify").addEventListener("click", verifyBounty);
+        document.getElementById("btnInspect").addEventListener("click", inspectBounty);
+
+        if (window.ethereum && typeof window.ethereum.on === "function") {
+            window.ethereum.on("accountsChanged", (accounts) => {
+                state.walletAddress = accounts[0] || "";
+                state.writeClient = null;
+                updateStatus(
+                    state.walletAddress
+                        ? "Wallet account changed; reconnect writes if needed"
+                        : "Wallet disconnected",
+                    Boolean(state.readConnected)
+                );
+            });
+
+            window.ethereum.on("chainChanged", () => {
+                state.readConnected = false;
+                state.readClient = null;
+                state.writeClient = null;
+                updateStatus("Wallet chain changed; reconnect dApp and wallet", false);
+                appendNotice(
+                    refs.bountyList,
+                    "Connection reset",
+                    "The wallet network changed. Reconnect reads and wallet on the intended GenLayer network before trusting the dashboard."
+                );
+            });
+        }
+
+        resetStats();
+        updateStatus("Disconnected", false);
+        appendNotice(
+            refs.bountyList,
+            "Ready to connect",
+            "1. Choose the network.\n2. Enter the deployed contract address.\n3. Connect the dApp for reads.\n4. Connect your wallet for writes.\n5. Serve this file over HTTP, not file://."
+        );
     </script>
 </body>
 </html>

@@ -1,71 +1,81 @@
-# Architecture -- Smart Bounty Verifier
+# Architecture - Smart Bounty Verifier
 
 ## Overview
 
-Smart Bounty Verifier is an Intelligent Contract deployed on GenLayer that combines:
-1. **On-chain state management** -- bounty data stored in TreeMap
-2. **AI-powered verification** -- LLM evaluates requirements
-3. **Web connectivity** -- fetches real web pages for analysis
-4. **Decentralized consensus** -- multiple validators must agree
+Smart Bounty Verifier has two moving parts:
 
-## Contract State
+1. A GenLayer intelligent contract that stores bounties and performs AI-assisted verification.
+2. A browser dApp that reads live contract state and sends wallet-backed write transactions through GenLayerJS.
 
-- `bounties: TreeMap[str, Bounty]` -- Maps bounty ID to serialized Bounty objects
-- `next_id: bigint` -- Auto-incrementing bounty ID counter
+The system is designed so that the frontend does not invent transaction success, fabricated state, or fake verification output.
 
-## Core Methods
+## Contract state
 
-### Write Methods
+- `bounties: TreeMap[str, Bounty]`
+- `next_id: bigint`
 
-| Method | Parameters | Description |
-|--------|-----------|-------------|
-| `create_bounty` | requirements_json, source_url, threshold_pct | Creates new bounty |
-| `submit` | bounty_id, submission_url | Submit work for a bounty |
-| `verify` | bounty_id | AI-powered verification with consensus |
+Each `Bounty` stores:
 
-### Read Methods
+- creator
+- requirements JSON
+- source URL
+- submission URL
+- submitter
+- status
+- verdict JSON
+- passed count
+- total count
+- threshold
 
-| Method | Parameters | Description |
-|--------|-----------|-------------|
-| `get_bounty` | bounty_id | Get single bounty details |
-| `get_all_bounties` | -- | List all bounties |
-| `get_stats` | -- | Aggregate statistics |
+## Contract flow
 
-## Consensus Flow
+### Create
 
-1. Leader node executes `verify()`, fetches web page, calls LLM.
-2. Each Validator independently fetches the same URL and calls its local LLM.
-3. Validators evaluate the leader's proposed verdict JSON using the custom validator rule:
-   - Must have the identical `verdict` value ("PASS" or "FAIL").
-   - Requirement counts (`passed_count`) must match within a +/-1 tolerance.
-4. If consensus is reached, the transaction is ACCEPTED and contract state is updated.
+- Parse the requirements array.
+- Reject empty arrays, oversized arrays, empty requirement strings, and invalid thresholds.
+- Reject source URLs that are not public `http` or `https` endpoints.
+- Store the computed threshold on-chain.
 
-## Data Flow
-```
-               Input: bounty_id
-                      │
-                      ▼
-             Load bounty from TreeMap
-                      │
-                      ▼
-     Fetch submission_url via gl.nondet.web.render()
-                      │
-                      ▼
-            For each requirement:
-    ├── Build LLM prompt with requirement + page content
-    ├── Call gl.nondet.exec_prompt() inside run_nondet_unsafe()
-    ├── Parse JSON response (PASS/FAIL + reason)
-    └── Append to details list
-                      │
-                      ▼
-          Count passed requirements
-                      │
-                      ▼
-            Compare with threshold
-                      │
-                      ▼
-       Update status: VERIFIED or REJECTED
-                      │
-                      ▼
-         Store updated bounty in TreeMap
-```
+### Submit
+
+- Require the bounty to be `OPEN` or `REJECTED`.
+- Reject submission URLs that are not public `http` or `https` endpoints.
+- Reset prior verdict fields before moving the bounty to `SUBMITTED`.
+
+### Verify
+
+- Read the stored bounty.
+- Fetch the submission page through `gl.nondet.web.render`.
+- If the submission page is empty or unreachable, return a fail-closed verdict.
+- Optionally fetch source context as secondary evidence.
+- Ask the LLM to evaluate each requirement while treating fetched page content as untrusted evidence.
+- Normalize every requirement result into `PASS` or `FAIL`.
+- Recompute `passed_count` from normalized details.
+- Derive the final verdict from the recomputed count and stored threshold.
+- Compare leader and validator outputs using structured equivalence rules instead of checking only the top-level verdict string.
+
+## Frontend flow
+
+The browser dApp follows the official GenLayerJS read and write pattern:
+
+- A read client loads dashboard state with `readContract()`.
+- A wallet-backed write client uses `provider: window.ethereum`.
+- Before writes, the dApp calls `client.connect(...)` for the selected network.
+- After each write, the dApp waits for `waitForTransactionReceipt(...)`.
+- The UI refreshes state only after the receipt returns and execution does not signal an error result.
+
+## Safety posture
+
+This repository explicitly guards against these failure modes:
+
+- False positive verification caused by `threshold_pct=0`
+- Treating unreachable evidence as success
+- Trusting model-provided counts over normalized requirement results
+- Sending local or private network targets into GenLayer web fetches
+- Prompt injection attempts embedded in fetched source or submission content
+- Frontend success messages that appear before a real receipt exists
+- Static or simulated dashboard data being passed off as live chain state
+
+## Evidence posture
+
+Source and UI can be reviewed locally, but deployment evidence for the current source must be established separately. A contract address should only be published after redeploying this exact source tree and verifying that receipts, contract state, and UI output all match.

@@ -1,1 +1,1 @@
-genlayer>=0.2.16
+genlayer==0.2.16
