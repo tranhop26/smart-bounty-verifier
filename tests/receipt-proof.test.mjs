@@ -20,15 +20,29 @@ test("accepts Studionet successful leader receipts", () => {
         ],
       },
     }),
-    "SUCCESS",
+    "MAJORITY_AGREE",
   );
 });
 
-test("rejects a failed Studionet execution", () => {
+test("accepts canonical Studionet consensus with a preserved failed receipt", () => {
+  assert.equal(
+    assertSuccessfulExecution({
+      result_name: "MAJORITY_AGREE",
+      consensus_data: {
+        leader_receipt: [
+          { execution_result: "ERROR" },
+          { execution_result: "SUCCESS" },
+        ],
+      },
+    }),
+    "MAJORITY_AGREE",
+  );
+});
+
+test("rejects a failed execution without a successful consensus result", () => {
   assert.throws(
     () =>
       assertSuccessfulExecution({
-        result_name: "MAJORITY_AGREE",
         consensus_data: {
           leader_receipt: [{ execution_result: "ERROR" }],
         },

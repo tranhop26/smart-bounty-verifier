@@ -25,14 +25,20 @@ export function assertSuccessfulExecution(receipt) {
     throw new Error("Transaction was not successful: MISSING_EXECUTION_RESULT.");
   }
 
-  const failedResult = executionResults.find((result) => result !== "SUCCESS");
-  if (failedResult) {
-    throw new Error(`Transaction was not successful: ${failedResult}.`);
-  }
-
   const consensusResult = normalize(receipt?.result_name ?? receipt?.resultName);
   if (consensusResult && !SUCCESSFUL_CONSENSUS_RESULTS.has(consensusResult)) {
     throw new Error(`Transaction consensus was not successful: ${consensusResult}.`);
+  }
+  if (consensusResult) {
+    // Studionet may preserve failed receipts from dissenting or superseded
+    // executions. The canonical consensus result decides the transaction;
+    // the caller must still confirm the expected contract state afterward.
+    return consensusResult;
+  }
+
+  const failedResult = executionResults.find((result) => result !== "SUCCESS");
+  if (failedResult) {
+    throw new Error(`Transaction was not successful: ${failedResult}.`);
   }
 
   return "SUCCESS";
