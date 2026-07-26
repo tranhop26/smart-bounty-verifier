@@ -2,6 +2,8 @@
 
 Smart Bounty Verifier is a GenLayer intelligent contract and browser dApp for reviewing work at an immutable GitHub commit. It records a shared verdict; it does **not** hold funds or pay a bounty.
 
+**Public app:** <https://tranhop26.github.io/smart-bounty-verifier/>
+
 ## What is protected
 
 - Evidence is limited to exact `github.com` and `raw.githubusercontent.com` hosts over HTTPS.
