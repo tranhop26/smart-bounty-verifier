@@ -1,1 +1,2 @@
-genlayer==0.2.16
+# The contract runtime is pinned by its py-genlayer Depends header and supplied
+# by GenVM. The local Python test suite has no third-party Python dependencies.

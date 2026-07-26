@@ -1,50 +1,62 @@
-# Deployment Evidence Checklist
+# Deployment evidence checklist
 
-Use this checklist before claiming that the current source tree is fully review-ready.
+Do not describe a build as deployed until every required item below is recorded for the same contract source.
 
-## Required deployment evidence
+## Provenance
 
-1. Deploy the current `contracts/smart_bounty_verifier.py` source to the intended GenLayer network.
-2. Record the deployed contract address.
-3. Record at least one successful transaction hash for each workflow:
-   - `create_bounty`
-   - `submit`
-   - `verify`
-4. For each transaction, keep the receipt or Explorer page showing:
-   - transaction hash
-   - target contract address
-   - final status
-   - execution result
-5. Confirm that the frontend is configured to the same network and exact contract address.
+- [ ] Repository commit
+- [ ] SHA-256 of `contracts/smart_bounty_verifier.py`
+- [ ] Target network
+- [ ] Contract address
+- [ ] Deployment transaction or Studio record
+- [ ] Live deployed source matches the bundled source in the UI
 
-## Required state evidence
+## End-to-end receipts
 
-After the live flow runs, verify:
+- [ ] `create_bounty` transaction hash and finished receipt
+- [ ] `submit` transaction hash and finished receipt
+- [ ] `verify` transaction hash and finished receipt
+- [ ] Final `get_bounty` response
+- [ ] Final `get_stats` response
 
-1. `get_stats()` returns values that match the dashboard.
-2. `get_all_bounties()` returns entries that match the list view.
-3. `get_bounty(bounty_id)` returns a state object that matches the inspect view.
-4. The `verdict_json` shown in the inspect view matches the contract state returned by `get_bounty(...)`.
+Every item must point to the same network and contract address. A historical demo, older deployment, or screenshot without its address is not sufficient.
 
-## Rule-sensitive checks
+## Adversarial checks
 
-Before submitting for review, explicitly confirm:
+- [ ] Threshold `0` is rejected
+- [ ] More than eight requirements is rejected
+- [ ] Non-HTTPS and non-GitHub evidence is rejected
+- [ ] Lookalike domains, credentials, custom ports, and URL fragments are rejected
+- [ ] A branch or short commit submission is rejected
+- [ ] Unavailable evidence becomes `INCONCLUSIVE`
+- [ ] Malformed or incomplete model output becomes `INCONCLUSIVE`
+- [ ] A clear below-threshold review becomes `REJECTED`
+- [ ] A leader-validator decision mismatch does not mutate state
+- [ ] Prompt-like text inside evidence is treated as data
 
-1. No demo or fallback data is shown when reads fail.
-2. Success is shown only after a real transaction receipt exists.
-3. The deployed contract is this source tree, not an older revision.
-4. The verify flow still fails closed when evidence URLs are unreachable or empty.
-5. The URLs used in create and submit are public and do not target localhost, private IP space, or metadata endpoints.
+## UI checks
 
-## Reviewer handoff pack
+- [ ] No demo data appears when reads fail
+- [ ] Wallet writes are disabled before source match
+- [ ] Changing contract/network clears stale state
+- [ ] Changing wallet account requires reconnecting
+- [ ] Success appears only after receipt and confirming state read
+- [ ] Transaction hash and final status remain visible
+- [ ] Layout works at 320, 375, 414, 768, and desktop widths
+- [ ] Keyboard tab navigation and focus indicators are usable
 
-Prepare the following together:
+## Handoff record
 
-- repository commit or source archive
-- deployed contract address
-- create transaction hash
-- submit transaction hash
-- verify transaction hash
-- one screenshot or recorded proof of the frontend using that same address
-
-Without these artifacts, the project may still land in `REQUEST_MORE_INFO` even if the local source code looks correct.
+```text
+Repository commit:
+Contract source SHA-256:
+Network:
+Contract address:
+Deployment transaction:
+Create transaction:
+Submit transaction:
+Verify transaction:
+Verified bounty ID:
+Reviewer:
+Date:
+```

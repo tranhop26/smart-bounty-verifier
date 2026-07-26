@@ -1,112 +1,120 @@
 # Smart Bounty Verifier
 
-Smart Bounty Verifier is a GenLayer intelligent contract for bounty review. A creator posts requirements and a public source URL, a submitter posts a public submission URL, and the contract uses GenLayer web access plus an LLM-based judgment flow to decide whether the submission passed the configured threshold.
+Smart Bounty Verifier is a GenLayer intelligent contract and browser dApp for reviewing work at an immutable GitHub commit. It records a shared verdict; it does **not** hold funds or pay a bounty.
 
-## Current posture
+## What is protected
 
-This repository is aligned around real GenLayer behavior rather than mocked UI signals:
+- Evidence is limited to exact `github.com` and `raw.githubusercontent.com` hosts over HTTPS.
+- Every submission must contain a full 40-character commit hash.
+- A bounty needs 1–8 bounded requirements and a threshold from 1–100%.
+- The model evaluates every requirement as `PASS`, `FAIL`, or `UNCLEAR`.
+- Counts and the final verdict are recomputed by the contract. Model-provided totals are ignored.
+- Missing, malformed, or ambiguous evidence becomes `INCONCLUSIVE`, never an accidental pass.
+- A validator independently fetches and reviews the evidence, then requires an exact match on the decision projection before state changes.
+- The UI compares the live deployed contract source with the bundled reviewed source before enabling wallet writes.
+- The UI reports success only after a finished transaction receipt and a confirming state read.
 
-- The contract rejects non-public URLs, embedded credentials, and `threshold_pct=0`.
-- Verification fails closed when submission evidence cannot be fetched or is empty.
-- The verifier recomputes `passed_count` from normalized requirement results instead of trusting a model-provided counter.
-- The equivalence rule compares structured outcome fields rather than only the top-level verdict string.
-- The frontend uses live contract reads and wallet-backed writes through GenLayerJS.
-- The frontend waits for a transaction receipt before claiming success.
-- The repository no longer treats a previous deployment or demo as proof for the current source tree.
+## Run locally
 
-## Contract behavior
+Requirements:
 
-Core write methods:
+- Node.js 20.19+ or 22.12+
+- Python 3.11+
+
+The `genlayer` package on PyPI is an empty placeholder and is not the contract
+runtime. GenVM supplies the exact runtime pinned in the contract's first-line
+`Depends` header.
+
+```bash
+npm install
+npm run check
+npm run dev
+```
+
+Open the local address printed by Vite. The reviewed Studionet deployment is
+prefilled, and the app independently checks its live source before enabling
+wallet writes.
+
+To prefill a reviewed deployment, copy `.env.example` to `.env.local` and set only the address for the intended network:
+
+```text
+VITE_STUDIONET_CONTRACT_ADDRESS=
+VITE_BRADBURY_CONTRACT_ADDRESS=
+VITE_ASIMOV_CONTRACT_ADDRESS=
+VITE_LOCALNET_CONTRACT_ADDRESS=
+```
+
+An address alone does not unlock writes. The app fetches the deployed source, computes its SHA-256 digest, and compares it with `contracts/smart_bounty_verifier.py`.
+
+## Build and test
+
+```bash
+npm run test
+npm run build
+npm audit
+```
+
+The test suite imports the real contract module through a lightweight GenLayer runtime stub. It exercises URL policy, immutable commits, create/submit/verify state transitions, leader-validator agreement and disagreement, malformed model output, unavailable evidence, prompt-injection boundaries, retries, and views.
+
+`dist/` is the static production artifact. Serve it over HTTP; do not open it with `file://`.
+
+## Deploy without breaking provenance
+
+1. Deploy the exact contents of `contracts/smart_bounty_verifier.py`.
+2. Record the network, address, source digest, deployment transaction, and repository commit.
+3. Put the address in the matching `VITE_*_CONTRACT_ADDRESS` variable.
+4. Rebuild the frontend.
+5. Connect read-only first. Confirm the UI shows **Source match**.
+6. Connect a wallet and run one create → submit → verify flow.
+7. Keep the three transaction receipts and the resulting state reads.
+
+Never reuse an older deployment for a newer contract source. If the deployed source differs by even one meaningful character, wallet writes stay disabled.
+
+## Verified Studionet deployment
+
+- Contract: `0x1eF77713442c7BFC1eE4e91D643B6e780C8FAB84`
+- Deployment transaction: `0x29d489023b28a5b4e005fa9bb7c0edd3db14c505194bd9698fc9e567abd5b745`
+- Reviewed source SHA-256: `f7585b0a118c55f28cd0018811e3545be8a55b0d1039151c20971d977952c728`
+- Evidence: `docs/deployment-evidence.md`
+
+## Contract interface
+
+Writes:
 
 - `create_bounty(requirements_json, source_url, threshold_pct)`
 - `submit(bounty_id, submission_url)`
 - `verify(bounty_id)`
 
-Core read methods:
+Reads:
 
 - `get_bounty(bounty_id)`
 - `get_all_bounties()`
 - `get_stats()`
 
-Verification rules:
+Statuses:
 
-- Only public `http` and `https` URLs are accepted.
-- Localhost, private IP space, link-local hosts, `.local` names, and metadata endpoints are rejected.
-- If the submission page cannot be fetched or is empty, the contract records a `FAIL` verdict.
-- Final status is `VERIFIED` only when normalized PASS results meet the configured threshold.
+- `OPEN`
+- `SUBMITTED`
+- `VERIFIED`
+- `REJECTED`
+- `INCONCLUSIVE`
 
-## Frontend
-
-The browser dApp in `frontend/index.html` is designed to use official GenLayerJS patterns:
-
-- Reads use `readContract()`.
-- Writes use a wallet-backed client with `provider: window.ethereum`.
-- Network switching uses `client.connect(...)`.
-- State updates are shown only after `waitForTransactionReceipt(...)` returns.
-
-Serve the frontend over HTTP rather than opening it with `file://`.
-
-Example:
-
-```bash
-cd frontend
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080`.
-
-## Before you claim a deployment
-
-This repository does not treat any older deployment as evidence for the current source tree. Before publishing a contract address, redeploy the current contract source and confirm:
-
-1. The deployed bytecode or source corresponds to `contracts/smart_bounty_verifier.py`.
-2. The frontend is pointed at that exact address.
-3. At least one create, submit, and verify flow succeeds against the intended network.
-4. The resulting transaction receipts and bounty state match the UI.
-
-## Local testing
-
-Run the policy-focused tests:
-
-```bash
-python -m pytest tests/test_contract_logic.py -v
-```
-
-Run a basic contract syntax check:
-
-```bash
-python -m py_compile contracts/smart_bounty_verifier.py
-```
-
-These checks validate policy and syntax. They do not replace a full runtime test on localnet, studionet, or testnet.
-
-## Dependencies
-
-`requirements.txt` pins:
+## Project layout
 
 ```text
-genlayer==0.2.16
+contracts/smart_bounty_verifier.py  reviewed intelligent contract
+frontend/index.html                 accessible application shell
+frontend/app.js                     live GenLayer client and proof flow
+frontend/styles.css                 responsive interface system
+tests/test_contract_logic.py        contract-integrated policy tests
+docs/architecture.md                trust and execution model
+docs/evidence-checklist.md          deployment handoff checklist
+PLANS.md                            implementation decisions and invariants
 ```
 
-## Project structure
+## Scope
 
-```text
-smart-bounty-verifier/
-|-- contracts/
-|   `-- smart_bounty_verifier.py
-|-- frontend/
-|   `-- index.html
-|-- tests/
-|   `-- test_contract_logic.py
-|-- docs/
-|   `-- architecture.md
-|-- README.md
-`-- requirements.txt
-```
-
-## Evidence status
-
-As of July 23, 2026, this repository contains source and tests, but deployment proof for the current source must still be produced manually after redeployment.
+This project verifies public GitHub evidence. It does not prove authorship, audit arbitrary external websites, transfer funds, or guarantee that reviewed code is deployed somewhere else.
 
 ## License
 

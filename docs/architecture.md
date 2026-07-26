@@ -1,81 +1,99 @@
-# Architecture - Smart Bounty Verifier
+# Architecture
 
-## Overview
+## Trust boundary
 
-Smart Bounty Verifier has two moving parts:
+Smart Bounty Verifier stores a deterministic state machine around one nondeterministic operation: reviewing public GitHub evidence with web access and an LLM.
 
-1. A GenLayer intelligent contract that stores bounties and performs AI-assisted verification.
-2. A browser dApp that reads live contract state and sends wallet-backed write transactions through GenLayerJS.
+The browser is not a source of truth. The model is not a source of truth. A visible success message is not a source of truth. The accepted contract receipt and the resulting contract state are the source of truth.
 
-The system is designed so that the frontend does not invent transaction success, fabricated state, or fake verification output.
+## State model
 
-## Contract state
+Each bounty stores:
 
-- `bounties: TreeMap[str, Bounty]`
-- `next_id: bigint`
+- creator and submitter
+- bounded requirements JSON
+- source and submission URLs
+- immutable submission commit
+- evidence digest
+- threshold and attempt count
+- pass, fail, unclear, and total counts
+- normalized verdict JSON
+- one of `OPEN`, `SUBMITTED`, `VERIFIED`, `REJECTED`, or `INCONCLUSIVE`
 
-Each `Bounty` stores:
+Valid transitions:
 
-- creator
-- requirements JSON
-- source URL
-- submission URL
-- submitter
-- status
-- verdict JSON
-- passed count
+```text
+create                         submit
+  └── OPEN ────────────────────► SUBMITTED
+                                  │
+                                  ├── verify + enough PASS ───► VERIFIED
+                                  ├── verify + clear failure ─► REJECTED
+                                  └── unavailable/ambiguous ──► INCONCLUSIVE
+                                      │
+                                      └── resubmit ───────────► SUBMITTED
+```
+
+## Deterministic input policy
+
+Create requires:
+
+- 1–8 non-empty requirements
+- each requirement at most 240 characters
+- threshold from 1–100
+- an HTTPS source URL on exact host `github.com` or `raw.githubusercontent.com`
+
+Submit additionally requires a `commit`, `tree`, `blob`, or raw URL containing a full 40-character Git commit hash. Credentials, fragments, custom ports, host suffix tricks, and other domains are rejected before any web access.
+
+## Nondeterministic review
+
+The leader:
+
+1. Fetches source and submission evidence independently through GenLayer web access.
+2. Bounds both responses before prompting.
+3. Labels all fetched content as untrusted evidence and tells the model to ignore embedded instructions.
+4. Requests one normalized decision per requirement.
+5. Recomputes counts and final status from those decisions.
+6. Hashes the exact evidence inputs used for the review.
+
+The validator runs the same review independently. Consensus compares:
+
+- evidence digest
+- ordered requirement decisions
+- recomputed pass/fail/unclear counts
 - total count
-- threshold
+- final verdict
 
-## Contract flow
+Free-form reasons are explanatory and intentionally excluded from consensus. Any decision mismatch rejects the nondeterministic result, so no review state is committed.
 
-### Create
+## Failure policy
 
-- Parse the requirements array.
-- Reject empty arrays, oversized arrays, empty requirement strings, and invalid thresholds.
-- Reject source URLs that are not public `http` or `https` endpoints.
-- Store the computed threshold on-chain.
+- Evidence fetch or model failure → `INCONCLUSIVE`
+- Missing or malformed requirement results → `UNCLEAR`
+- Any `UNCLEAR` result → `INCONCLUSIVE`
+- All results clear, threshold met → `VERIFIED`
+- All results clear, threshold missed → `REJECTED`
+- Leader-validator projection mismatch → transaction does not mutate review state
 
-### Submit
+This separates a clear failure from “the system cannot make a defensible decision.”
 
-- Require the bounty to be `OPEN` or `REJECTED`.
-- Reject submission URLs that are not public `http` or `https` endpoints.
-- Reset prior verdict fields before moving the bounty to `SUBMITTED`.
+## Frontend proof flow
 
-### Verify
+The dApp has two connection levels:
 
-- Read the stored bounty.
-- Fetch the submission page through `gl.nondet.web.render`.
-- If the submission page is empty or unreachable, return a fail-closed verdict.
-- Optionally fetch source context as secondary evidence.
-- Ask the LLM to evaluate each requirement while treating fetched page content as untrusted evidence.
-- Normalize every requirement result into `PASS` or `FAIL`.
-- Recompute `passed_count` from normalized details.
-- Derive the final verdict from the recomputed count and stored threshold.
-- Compare leader and validator outputs using structured equivalence rules instead of checking only the top-level verdict string.
+1. **Read-only:** validate address, inspect the live schema, fetch deployed source, compare its digest, then load live state.
+2. **Wallet writes:** available only when the deployed source matches the bundled reviewed source.
 
-## Frontend flow
+For every write, the UI:
 
-The browser dApp follows the official GenLayerJS read and write pattern:
+1. validates user input locally
+2. submits through a wallet-backed GenLayer client
+3. displays the real transaction hash
+4. waits for a finished receipt
+5. reads contract state again
+6. confirms the expected state transition
 
-- A read client loads dashboard state with `readContract()`.
-- A wallet-backed write client uses `provider: window.ethereum`.
-- Before writes, the dApp calls `client.connect(...)` for the selected network.
-- After each write, the dApp waits for `waitForTransactionReceipt(...)`.
-- The UI refreshes state only after the receipt returns and execution does not signal an error result.
+Changing network, contract, chain, or wallet account invalidates the relevant connection and disables stale write controls.
 
-## Safety posture
+## Deliberate limits
 
-This repository explicitly guards against these failure modes:
-
-- False positive verification caused by `threshold_pct=0`
-- Treating unreachable evidence as success
-- Trusting model-provided counts over normalized requirement results
-- Sending local or private network targets into GenLayer web fetches
-- Prompt injection attempts embedded in fetched source or submission content
-- Frontend success messages that appear before a real receipt exists
-- Static or simulated dashboard data being passed off as live chain state
-
-## Evidence posture
-
-Source and UI can be reviewed locally, but deployment evidence for the current source must be established separately. A contract address should only be published after redeploying this exact source tree and verifying that receipts, contract state, and UI output all match.
+The contract verifies public evidence at a Git commit. It is not an escrow, payment rail, authorship oracle, general URL crawler, or security audit.
