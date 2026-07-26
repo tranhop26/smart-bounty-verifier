@@ -22,6 +22,7 @@ Requirements:
 
 - Node.js 20.19+ or 22.12+
 - Python 3.11+
+- MetaMask with Snaps support for browser write actions
 
 The `genlayer` package on PyPI is an empty placeholder and is not the contract
 runtime. GenVM supplies the exact runtime pinned in the contract's first-line
