@@ -8,6 +8,7 @@ __pycache__/
 .venv/
 *.egg-info/
 node_modules/
+.vercel/
 dist/
 build/
 .idea/
