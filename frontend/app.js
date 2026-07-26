@@ -5,7 +5,8 @@ import {
   testnetAsimov,
   testnetBradbury,
 } from "genlayer-js/chains";
-import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
+import { TransactionStatus } from "genlayer-js/types";
+import { assertSuccessfulExecution } from "./receipt-proof.js";
 import reviewedContractSource from "../contracts/smart_bounty_verifier.py?raw";
 
 const NETWORKS = {
@@ -782,10 +783,7 @@ async function writeWithProof(label, functionName, args, confirmState) {
     });
 
     setTransactionProgress(3, label);
-    if (receipt?.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
-      const result = receipt?.txExecutionResultName || "MISSING_EXECUTION_RESULT";
-      throw new Error(`Transaction was not successful: ${result}.`);
-    }
+    assertSuccessfulExecution(receipt);
 
     setTransactionProgress(4, label);
     const proof = await confirmState();
