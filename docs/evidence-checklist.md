@@ -38,9 +38,14 @@ Every item must point to the same network and contract address. A historical dem
 
 - [ ] No demo data appears when reads fail
 - [ ] Wallet writes are disabled before source match
+- [ ] A standard EIP-1193 provider without Snap methods can connect
+- [ ] No wallet-specific extension or Snap permission is requested
+- [ ] Wrong-chain connection uses standard add/switch methods
 - [ ] Changing contract/network clears stale state
 - [ ] Changing wallet account requires reconnecting
+- [ ] Changing the selected wallet chain requires reconnecting
 - [ ] Success appears only after receipt and confirming state read
+- [ ] Live wallet transaction is confirmed by explorer and contract readback
 - [ ] Transaction hash and final status remain visible
 - [ ] Layout works at 320, 375, 414, 768, and desktop widths
 - [ ] Keyboard tab navigation and focus indicators are usable

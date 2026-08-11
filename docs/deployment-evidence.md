@@ -45,3 +45,20 @@ Bounty `0`:
 Two earlier create attempts were finalized as contract-level rollbacks while
 testing CLI string escaping. They did not mutate state and are not counted as
 successful workflow evidence.
+
+## Standard EIP-1193 frontend regression fix
+
+Prepared on 2026-08-11 in branch `fix/standard-eip1193-wallet`.
+
+- Contract source: unchanged
+- Studionet contract: unchanged
+- Contract deployment transaction: unchanged
+- Frontend adapter tests: standard injected provider, EIP-6963 fallback,
+  account validation, chain match, chain switch, unknown-chain add/switch,
+  rejection propagation, lifecycle unsubscribe, and `genlayer-js` provider
+  handoff
+- MetaMask Snap calls: removed from the application connection path
+- Live Chrome wallet transaction: pending browser verification
+
+This section records a frontend-only compatibility fix. It does not replace or
+reinterpret the original deployment and receipt evidence above.

@@ -24,7 +24,7 @@ Requirements:
 
 - Node.js 20.19+ or 22.12+
 - Python 3.11+
-- MetaMask with Snaps support for browser write actions
+- A browser wallet exposing a standard EIP-1193 provider (`window.ethereum`)
 
 The `genlayer` package on PyPI is an empty placeholder and is not the contract
 runtime. GenVM supplies the exact runtime pinned in the contract's first-line
@@ -38,7 +38,8 @@ npm run dev
 
 Open the local address printed by Vite. The reviewed Studionet deployment is
 prefilled, and the app independently checks its live source before enabling
-wallet writes.
+wallet writes. The selected injected provider is passed directly to
+`genlayer-js`; no MetaMask Snap or wallet-specific extension is required.
 
 To prefill a reviewed deployment, copy `.env.example` to `.env.local` and set only the address for the intended network:
 

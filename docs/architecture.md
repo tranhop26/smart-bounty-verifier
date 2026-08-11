@@ -83,6 +83,12 @@ The dApp has two connection levels:
 1. **Read-only:** validate address, inspect the live schema, fetch deployed source, compare its digest, then load live state.
 2. **Wallet writes:** available only when the deployed source matches the bundled reviewed source.
 
+Wallet writes use the standard EIP-1193 interface. The frontend discovers an
+injected provider from `window.ethereum`, its provider list, or EIP-6963,
+requests an account, prepares the selected GenLayer chain with standard wallet
+methods, and passes that same provider to `genlayer-js`. It does not require a
+MetaMask Snap or another wallet-specific extension.
+
 For every write, the UI:
 
 1. validates user input locally
@@ -92,7 +98,7 @@ For every write, the UI:
 5. reads contract state again
 6. confirms the expected state transition
 
-Changing network, contract, chain, or wallet account invalidates the relevant connection and disables stale write controls.
+Changing network, contract, chain, or wallet account invalidates the relevant connection and disables stale write controls. Account and chain listeners are bound to the selected provider rather than an unrelated injected wallet.
 
 ## Deliberate limits
 
