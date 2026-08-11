@@ -32,6 +32,7 @@
 - Produces: `prepareProviderNetwork(provider, network) -> Promise<void>`
 - Produces: `requestWalletAccount(provider) -> Promise<string>`
 - Produces: `subscribeProvider(provider, { onAccountsChanged, onChainChanged }) -> () => void`
+- Produces: `connectInjectedWallet({ ethereum, eventTarget, network, createWalletClient }) -> Promise<{ provider, account, client }>`
 - Consumes: a GenLayer network object with `chain` and optional `explorer`.
 
 - [ ] **Step 1: Read the good-test rules before adding tests**
@@ -47,6 +48,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   discoverInjectedProvider,
+  connectInjectedWallet,
   prepareProviderNetwork,
   requestWalletAccount,
   subscribeProvider,
@@ -147,6 +149,30 @@ test("provider subscriptions can be removed", () => {
   unsubscribe();
   assert.equal(provider.listeners.size, 0);
 });
+
+test("connects a standard provider and gives it to the wallet client", async () => {
+  const provider = recordingProvider({
+    eth_requestAccounts: ["0x1111111111111111111111111111111111111111"],
+    eth_chainId: "0xf22f",
+  });
+  const result = await connectInjectedWallet({
+    ethereum: provider,
+    network: NETWORK,
+    createWalletClient(config) {
+      return Object.freeze({ ...config, kind: "wallet-client" });
+    },
+  });
+  assert.equal(result.provider, provider);
+  assert.equal(result.account, "0x1111111111111111111111111111111111111111");
+  assert.equal(result.client.provider, provider);
+  assert.equal(result.client.account, result.account);
+  assert.equal(result.client.chain, NETWORK.chain);
+  assert.equal(result.client.kind, "wallet-client");
+  assert.deepEqual(provider.calls.map(({ method }) => method), [
+    "eth_requestAccounts",
+    "eth_chainId",
+  ]);
+});
 ```
 
 Add separate assertions for missing providers, invalid account responses, and user rejection code `4001` without changing the original provider error.
@@ -159,7 +185,7 @@ Expected: FAIL because `frontend/wallet-provider.js` does not exist. This is the
 
 - [ ] **Step 4: Implement the minimum provider module**
 
-Create `frontend/wallet-provider.js`. The implementation must validate only the standard `request` interface, deduplicate candidates, listen briefly for EIP-6963 announcements, and export the four interfaces above. Network preparation must use this sequence only:
+Create `frontend/wallet-provider.js`. The implementation must validate only the standard `request` interface, deduplicate candidates, listen briefly for EIP-6963 announcements, and export the five interfaces above. `connectInjectedWallet` must exercise discovery, account request, network preparation, and wallet-client creation as one observable behavior. Network preparation must use this sequence only:
 
 ```js
 const activeChainId = await provider.request({ method: "eth_chainId" });
@@ -206,46 +232,18 @@ git commit -m "test: cover standard EIP-1193 wallet providers"
 - Modify: `frontend/app.js:1-216`
 - Modify: `frontend/app.js:700-749`
 - Modify: `frontend/app.js:1029-1058`
-- Create: `tests/frontend-wallet-integration.test.mjs`
+- Test: `tests/wallet-provider.test.mjs`
 
 **Interfaces:**
-- Consumes: all four exports from `frontend/wallet-provider.js`.
+- Consumes: `connectInjectedWallet` and `subscribeProvider` from `frontend/wallet-provider.js`.
 - Produces: a write client created with the discovered provider and account.
 - Maintains: `state.walletProvider`, `state.walletAddress`, `state.writeClient`, and one provider unsubscribe callback.
 
-- [ ] **Step 1: Write a failing static integration regression test**
-
-Create `tests/frontend-wallet-integration.test.mjs`:
-
-```js
-import test from "node:test";
-import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-
-const app = await readFile(new URL("../frontend/app.js", import.meta.url), "utf8");
-const html = await readFile(new URL("../frontend/index.html", import.meta.url), "utf8");
-
-test("frontend contains no MetaMask Snap requirement", () => {
-  assert.doesNotMatch(app, /wallet_(?:get|request)Snaps|GENLAYER_SNAP_ID|findMetaMaskProvider|prepareMetaMask/);
-  assert.doesNotMatch(html, /Connect MetaMask/);
-});
-
-test("write client receives the selected EIP-1193 provider", () => {
-  assert.match(app, /createClient\(\{[\s\S]*?account,[\s\S]*?provider,[\s\S]*?\}\)/);
-});
-```
-
-- [ ] **Step 2: Run the integration test and verify RED**
-
-Run: `node --test tests/frontend-wallet-integration.test.mjs`
-
-Expected: FAIL because Snap identifiers and MetaMask-only copy still exist.
-
-- [ ] **Step 3: Replace the Snap-only path**
+- [ ] **Step 1: Replace the Snap-only path using the tested adapter**
 
 In `frontend/app.js`:
 
-- Import the four wallet-provider helpers.
+- Import `connectInjectedWallet` and `subscribeProvider`.
 - Delete `GENLAYER_SNAP_ID`, `addProviderCandidate`, `findMetaMaskProvider`,
   `walletErrorCode`, `isUnknownChainError`, and `prepareMetaMask`.
 - Add `walletUnsubscribe: null` to state.
@@ -260,18 +258,12 @@ In `frontend/app.js`:
 The core success path must be:
 
 ```js
-const provider = await discoverInjectedProvider({
+const { provider, account, client: writeClient } = await connectInjectedWallet({
   ethereum: window.ethereum,
   eventTarget: window,
-});
-if (!provider) throw new Error("No standard EIP-1193 browser wallet was detected.");
-
-const account = await requestWalletAccount(provider);
-await prepareProviderNetwork(provider, currentNetwork());
-const writeClient = createClient({
-  chain: currentNetwork().chain,
-  account,
-  provider,
+  network: currentNetwork(),
+  createWalletClient: ({ chain, account, provider }) =>
+    createClient({ chain, account, provider }),
 });
 ```
 
@@ -279,23 +271,29 @@ Do not call `writeClient.connect()` because `genlayer-js@1.1.8` implements that
 method with a MetaMask Snap requirement. The explicit standard network
 preparation is intentional and covered by tests.
 
-- [ ] **Step 4: Run both wallet tests and verify GREEN**
+- [ ] **Step 2: Run the wallet behavior tests after app integration**
 
-Run: `node --test tests/wallet-provider.test.mjs tests/frontend-wallet-integration.test.mjs`
+Run: `node --test tests/wallet-provider.test.mjs`
 
-Expected: all tests pass and no Snap method appears in runtime source.
+Expected: all standard-provider behavior tests remain green.
 
-- [ ] **Step 5: Run the complete test suite**
+- [ ] **Step 3: Build the real application integration**
+
+Run: `npm run build`
+
+Expected: Vite resolves the new module and exits 0.
+
+- [ ] **Step 4: Run the complete test suite**
 
 Run: `npm test`
 
 Expected: the 16 Python contract tests, 6 receipt tests, and all new wallet
 tests pass.
 
-- [ ] **Step 6: Commit the frontend integration**
+- [ ] **Step 5: Commit the frontend integration**
 
 ```text
-git add frontend/app.js tests/frontend-wallet-integration.test.mjs
+git add frontend/app.js
 git commit -m "fix: support standard EIP-1193 wallets"
 ```
 
@@ -309,25 +307,13 @@ git commit -m "fix: support standard EIP-1193 wallets"
 - Modify: `docs/architecture.md:80-97`
 - Modify: `docs/evidence-checklist.md:37-48`
 - Modify: `docs/deployment-evidence.md`
-- Test: `tests/frontend-wallet-integration.test.mjs`
+- Verify: browser DOM and the full automated suite.
 
 **Interfaces:**
 - Consumes: the implemented standard EIP-1193 connection behavior.
 - Produces: accurate reviewer-facing setup and verification guidance.
 
-- [ ] **Step 1: Extend the failing copy test**
-
-Add assertions that `frontend/index.html` contains `Connect wallet`, README
-requires a standard EIP-1193 injected wallet, and tracked frontend/docs files
-do not contain `Snaps support`, `required GenLayer Snap`, or `Connect MetaMask`.
-
-- [ ] **Step 2: Run the copy test and verify RED**
-
-Run: `node --test tests/frontend-wallet-integration.test.mjs`
-
-Expected: FAIL on the old MetaMask Snap prerequisites and button text.
-
-- [ ] **Step 3: Update copy and evidence checklist**
+- [ ] **Step 1: Update copy and evidence checklist**
 
 Use wallet-neutral copy. README prerequisites must say:
 
@@ -341,22 +327,22 @@ provider without Snap methods, network switching, account-change invalidation,
 and live transaction/state readback. Add a dated frontend-fix section to
 deployment evidence while preserving the original contract deployment facts.
 
-- [ ] **Step 4: Run the copy test and verify GREEN**
+- [ ] **Step 2: Verify rendered copy and controls in the local browser**
 
-Run: `node --test tests/frontend-wallet-integration.test.mjs`
+Open the local app and inspect its rendered DOM. Confirm the enabled control is
+named `Connect wallet`, connection status mentions standard account/network
+approval, and no visible error or instruction requires MetaMask or Snaps.
 
-Expected: all copy and integration assertions pass.
-
-- [ ] **Step 5: Build the production artifact**
+- [ ] **Step 3: Build the production artifact**
 
 Run: `npm run build`
 
 Expected: Vite exits 0 and produces `dist/index.html` plus hashed assets.
 
-- [ ] **Step 6: Commit documentation and copy**
+- [ ] **Step 4: Commit documentation and copy**
 
 ```text
-git add frontend/index.html README.md docs/architecture.md docs/evidence-checklist.md docs/deployment-evidence.md tests/frontend-wallet-integration.test.mjs
+git add frontend/index.html README.md docs/architecture.md docs/evidence-checklist.md docs/deployment-evidence.md
 git commit -m "docs: document injected wallet support"
 ```
 
@@ -500,4 +486,3 @@ Check Git author, active GitHub CLI account, repository owner/remote, Vercel
 project/team, and proposed branch/commit. Ask the user to confirm those exact
 identities and the exact `git push` and Vercel deployment actions. Do not push,
 deploy, or resubmit before confirmation.
-
