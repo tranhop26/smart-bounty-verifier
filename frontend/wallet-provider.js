@@ -144,4 +144,3 @@ export async function connectInjectedWallet({
   });
   return { provider, account, client };
 }
-

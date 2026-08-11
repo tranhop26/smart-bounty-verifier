@@ -149,4 +149,3 @@ The local change will be prepared with a clean diff, test output, build output,
 known limitations, and updated redeploy/resubmission notes. No GitHub push or
 Vercel deployment will occur until the user confirms the exact GitHub account,
 repository remote, Vercel team/project, and proposed action at that time.
-

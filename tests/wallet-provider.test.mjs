@@ -216,4 +216,3 @@ test("connects a standard provider and gives it to the wallet client", async () 
     "eth_chainId",
   ]);
 });
-
