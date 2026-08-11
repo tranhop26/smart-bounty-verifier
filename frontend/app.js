@@ -7,6 +7,10 @@ import {
 } from "genlayer-js/chains";
 import { TransactionStatus } from "genlayer-js/types";
 import { assertSuccessfulExecution } from "./receipt-proof.js";
+import {
+  connectInjectedWallet,
+  subscribeProvider,
+} from "./wallet-provider.js";
 import reviewedContractSource from "../contracts/smart_bounty_verifier.py?raw";
 
 const NETWORKS = {
@@ -54,14 +58,13 @@ const REQUIRED_METHODS = [
   "get_stats",
 ];
 
-const GENLAYER_SNAP_ID = "npm:genlayer-wallet-plugin";
-
 const state = {
   networkKey: "studionet",
   contractAddress: "",
   readClient: null,
   writeClient: null,
   walletProvider: null,
+  walletUnsubscribe: null,
   walletAddress: "",
   readConnected: false,
   sourceMatch: false,
@@ -116,105 +119,6 @@ const inspectButton = refs.inspectForm.querySelector('button[type="submit"]');
 
 function currentNetwork() {
   return NETWORKS[state.networkKey];
-}
-
-function addProviderCandidate(candidates, provider, info = {}) {
-  if (!provider?.request || candidates.some((candidate) => candidate.provider === provider)) return;
-  candidates.push({ provider, info });
-}
-
-async function findMetaMaskProvider() {
-  const candidates = [];
-  const injected = window.ethereum;
-
-  for (const provider of injected?.providers || []) {
-    addProviderCandidate(candidates, provider);
-  }
-  addProviderCandidate(candidates, injected);
-
-  const onAnnounce = (event) => {
-    addProviderCandidate(candidates, event.detail?.provider, event.detail?.info);
-  };
-  window.addEventListener("eip6963:announceProvider", onAnnounce);
-  window.dispatchEvent(new Event("eip6963:requestProvider"));
-  await new Promise((resolve) => window.setTimeout(resolve, 150));
-  window.removeEventListener("eip6963:announceProvider", onAnnounce);
-
-  const exactMetaMask = candidates.find(
-    ({ info }) => String(info?.rdns || "").toLowerCase() === "io.metamask",
-  );
-  const flaggedMetaMask = candidates.find(
-    ({ provider }) => provider.isMetaMask && !provider.isPhantom,
-  );
-  return (exactMetaMask || flaggedMetaMask)?.provider || null;
-}
-
-function walletErrorCode(error) {
-  return Number(error?.code ?? error?.data?.originalError?.code);
-}
-
-function isUnknownChainError(error) {
-  const message = String(error?.message || "").toLowerCase();
-  return (
-    walletErrorCode(error) === 4902 ||
-    message.includes("unrecognized chain") ||
-    message.includes("unknown chain") ||
-    message.includes("not added")
-  );
-}
-
-async function prepareMetaMask(provider, network) {
-  const chain = network.chain;
-  const chainId = `0x${chain.id.toString(16)}`;
-  const chainParams = {
-    chainId,
-    chainName: chain.name,
-    rpcUrls: [...chain.rpcUrls.default.http],
-    nativeCurrency: chain.nativeCurrency,
-    blockExplorerUrls: network.explorer ? [network.explorer] : [],
-  };
-
-  const activeChainId = await provider.request({ method: "eth_chainId" });
-  if (String(activeChainId).toLowerCase() !== chainId.toLowerCase()) {
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId }],
-      });
-    } catch (error) {
-      if (!isUnknownChainError(error)) throw error;
-      await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [chainParams],
-      });
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId }],
-      });
-    }
-  }
-
-  let installedSnaps;
-  try {
-    installedSnaps = await provider.request({ method: "wallet_getSnaps" });
-  } catch (error) {
-    if (walletErrorCode(error) === -32601 || /method not found/i.test(error?.message || "")) {
-      throw new Error(
-        "The selected wallet does not support MetaMask Snaps. Enable the MetaMask extension for this site, then reconnect.",
-      );
-    }
-    throw error;
-  }
-
-  const hasGenLayerSnap = Object.values(installedSnaps || {}).some(
-    (snap) => snap?.id === GENLAYER_SNAP_ID,
-  );
-  if (!hasGenLayerSnap) {
-    await provider.request({
-      method: "wallet_requestSnaps",
-      params: { [GENLAYER_SNAP_ID]: {} },
-    });
-  }
 }
 
 function shortHex(value, left = 6, right = 4) {
@@ -558,13 +462,19 @@ function setBusy(value) {
   updateActionAvailability();
 }
 
-function resetConnection({ keepAddress = true } = {}) {
-  state.readClient = null;
+function clearWalletConnection() {
+  state.walletUnsubscribe?.();
+  state.walletUnsubscribe = null;
   state.writeClient = null;
   state.walletProvider = null;
+  state.walletAddress = "";
+}
+
+function resetConnection({ keepAddress = true } = {}) {
+  state.readClient = null;
+  clearWalletConnection();
   state.readConnected = false;
   state.sourceMatch = false;
-  state.walletAddress = "";
   state.deployedSourceHash = "";
   state.bounties = [];
   state.stats = null;
@@ -704,31 +614,51 @@ async function connectWallet() {
   setBusy(true);
   setConnectionStatus(
     "loading",
-    "Waiting for MetaMask",
-    `Approve the account, GenLayer Snap, and ${currentNetwork().label} network requests.`,
+    "Waiting for wallet",
+    `Approve the account and ${currentNetwork().label} network requests.`,
   );
   try {
-    const provider = await findMetaMaskProvider();
-    if (!provider) {
-      throw new Error(
-        "MetaMask was not detected. Install or enable MetaMask for this site; other injected wallets do not support the required GenLayer Snap.",
-      );
-    }
-
-    const accounts = await provider.request({ method: "eth_requestAccounts" });
-    const account = accounts?.[0];
-    if (!account) throw new Error("The wallet did not return an account.");
-    await prepareMetaMask(provider, currentNetwork());
-
-    const writeClient = createClient({
-      chain: currentNetwork().chain,
-      account,
-      provider,
+    clearWalletConnection();
+    const { provider, account, client: writeClient } = await connectInjectedWallet({
+      ethereum: window.ethereum,
+      eventTarget: window,
+      network: currentNetwork(),
+      createWalletClient: ({ chain, account: walletAccount, provider: walletProvider }) =>
+        createClient({
+          chain,
+          account: walletAccount,
+          provider: walletProvider,
+        }),
     });
 
     state.walletAddress = account;
     state.walletProvider = provider;
     state.writeClient = writeClient;
+    state.walletUnsubscribe = subscribeProvider(provider, {
+      onAccountsChanged(accounts) {
+        const nextAccount = accounts?.[0] || "";
+        clearWalletConnection();
+        updateConnectionMeta();
+        updateActionAvailability();
+        setConnectionStatus(
+          state.sourceMatch ? "success" : "error",
+          nextAccount ? "Wallet account changed" : "Wallet disconnected",
+          nextAccount
+            ? "Reconnect the wallet client before the next write."
+            : "Write actions are disabled.",
+        );
+      },
+      onChainChanged() {
+        clearWalletConnection();
+        updateConnectionMeta();
+        updateActionAvailability();
+        setConnectionStatus(
+          "error",
+          "Wallet network changed",
+          "Reconnect the wallet on the selected GenLayer network before writing.",
+        );
+      },
+    });
     setConnectionStatus(
       "success",
       "Reads, source, and wallet are ready",
@@ -736,9 +666,7 @@ async function connectWallet() {
     );
     resetTransactionPanel("Choose an action. Success will require a receipt and confirmed state change.");
   } catch (error) {
-    state.walletAddress = "";
-    state.walletProvider = null;
-    state.writeClient = null;
+    clearWalletConnection();
     setConnectionStatus(
       "error",
       "Wallet connection failed",
@@ -1025,37 +953,6 @@ document.querySelector('[data-action="jump-workflow"]').addEventListener("click"
     block: "start",
   });
 });
-
-if (window.ethereum?.on) {
-  window.ethereum.on("accountsChanged", (accounts) => {
-    const nextAccount = accounts?.[0] || "";
-    state.walletAddress = "";
-    state.walletProvider = null;
-    state.writeClient = null;
-    updateConnectionMeta();
-    updateActionAvailability();
-    setConnectionStatus(
-      state.sourceMatch ? "success" : "error",
-      nextAccount ? "Wallet account changed" : "Wallet disconnected",
-      nextAccount
-        ? "Reconnect the wallet client before the next write."
-        : "Write actions are disabled.",
-    );
-  });
-
-  window.ethereum.on("chainChanged", () => {
-    state.writeClient = null;
-    state.walletProvider = null;
-    state.walletAddress = "";
-    updateConnectionMeta();
-    updateActionAvailability();
-    setConnectionStatus(
-      "error",
-      "Wallet network changed",
-      "Reconnect the wallet on the selected GenLayer network before writing.",
-    );
-  });
-}
 
 async function initialize() {
   state.networkKey = refs.network.value;
